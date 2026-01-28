@@ -16,24 +16,26 @@ function App() {
   const theme = createTheme({
     palette: { mode: "light" },
   });
-  <ThemeProvider theme={theme}>
-    <CssBaseLine />
-    <BrowserRouter>
-      <Routes>
-        // Authlayout routes
-        <Route path="/" element={<Authlayout />}>
-          <Route path="login" element={<Loginpage />} />
-          <Route path="signup" element={<Signuppage />} />
-        </Route>
-        // Applayout routes
-        <Route path="/" element={<Applayout />}>
-          <Route index element={<Homepage />} />
-          <Route path="boards" element={<Homepage />} />
-          <Route path="boards/:boardId" element={<Boardpage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  </ThemeProvider>;
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseLine />
+      <BrowserRouter>
+        <Routes>
+          // Authlayout routes
+          <Route path="/" element={<Authlayout />}>
+            <Route path="login" element={<Loginpage />} />
+            <Route path="signup" element={<Signuppage />} />
+          </Route>
+          // Applayout routes
+          <Route path="/" element={<Applayout />}>
+            <Route index element={<Homepage />} />
+            <Route path="boards" element={<Homepage />} />
+            <Route path="boards/:boardId" element={<Boardpage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
 }
 
 export default App;

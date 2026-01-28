@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router";
 import authUtils from "../../utils/authUtils";
 import Loading from "../common/Loading";
-import logo from "./react.svg";
+// import logo from "./react.svg";
 import { Container, Box } from "@mui/material";
 
 const Authlayout = () => {
@@ -31,7 +31,7 @@ const Authlayout = () => {
           alignItems: "center",
         }}
       >
-        <img src={logo} style={{ width: "100px" }} alt="logo" />
+        {/* <img src={logo} style={{ width: "100px" }} alt="logo" /> */}
         <Outlet />
       </Box>
     </Container>
