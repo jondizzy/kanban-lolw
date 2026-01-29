@@ -1,12 +1,13 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.tsx";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { store } from "./store/store";
+import Kanban from "./pages/Kanban";
 
-// this is where the rendering happens
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    {/* this is what it renders */}
-    <App />
-  </StrictMode>,
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <Kanban />
+    </Provider>
+  </React.StrictMode>,
 );

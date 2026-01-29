@@ -5,12 +5,12 @@ import "@fontsource/roboto/700.css";
 import CssBaseLine from "@mui/material/CssBaseline";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { BrowserRouter, Route, Routes } from "react-router"; //react-router-dom is not needed as of v6
-import Applayout from "./components/layout/Applayout";
-import Authlayout from "./components/layout/Authlayout";
-import Homepage from "./pages/Homepage";
-import Boardpage from "./pages/Boardpage";
-import Loginpage from "./pages/Loginpage";
-import Signuppage from "./pages/Signuppage";
+// import Applayout from "./components/layout/Applayout";
+// import Authlayout from "./components/layout/Authlayout";
+// import Homepage from "./pages/Homepage";
+// import Boardpage from "./pages/Boardpage";
+// import Loginpage from "./pages/Loginpage";
+// import Signuppage from "./pages/Signuppage";
 
 function App() {
   const theme = createTheme({
@@ -21,7 +21,8 @@ function App() {
       <CssBaseLine />
       <BrowserRouter>
         <Routes>
-          // Authlayout routes
+          <Route></Route>
+          {/* // Authlayout routes
           <Route path="/" element={<Authlayout />}>
             <Route path="login" element={<Loginpage />} />
             <Route path="signup" element={<Signuppage />} />
@@ -31,7 +32,7 @@ function App() {
             <Route index element={<Homepage />} />
             <Route path="boards" element={<Homepage />} />
             <Route path="boards/:boardId" element={<Boardpage />} />
-          </Route>
+          </Route> */}
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

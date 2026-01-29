@@ -1,21 +1,29 @@
-import { useSelector, useDispatch } from "react-redux";
-import { Drawer } from "@mui/material";
+// import { useSelector, useDispatch } from "react-redux";
+// import { Drawer, List } from "@mui/material";
 
-const Sidebar = () => {
-  // const user = useSelector((state) => state.user.value);
-  const sidebarWidth = 250;
-  return (
-    <Drawer
-      container={window.document.body}
-      variant="permanent"
-      open={true}
-      sx={{
-        width: sidebarWidth,
-        height: "100%",
-        "& > div": { borderRight: "none" },
-      }}
-    ></Drawer>
-  );
-};
+// const Sidebar = () => {
+//   // const user = useSelector((state) => state.user.value);
+//   const sidebarWidth = 250;
+//   return (
+//     <Drawer
+//       container={window.document.body}
+//       variant="permanent"
+//       open={true}
+//       sx={{
+//         width: sidebarWidth,
+//         height: "100vh",
+//         "& > div": { borderRight: "none" },
+//       }}
+//     >
+//       <List
+//         disablePadding
+//         sx={{
+//           width: sidebarWidth,
+//           height: "100vh",
+//         }}
+//       ></List>
+//     </Drawer>
+//   );
+// };
 
-export default Sidebar;
+// export default Sidebar;
