@@ -5,6 +5,8 @@ export type Task = {
   id: string;
   title: string;
   description?: string;
+  value?: number;
+  owner?: string;
 };
 
 type Column = {
@@ -50,6 +52,7 @@ const kanbanSlice = createSlice({
   name: "kanban",
   initialState,
   reducers: {
+    //move
     moveTask: (
       state,
       action: PayloadAction<{
@@ -65,7 +68,7 @@ const kanbanSlice = createSlice({
       state.columns[sourceCol].taskIds.splice(sourceIndex, 1);
       state.columns[destCol].taskIds.splice(destIndex, 0, taskId);
     },
-
+    //add
     addTask(state, action: PayloadAction<{ columnId: string; title: string }>) {
       const id = `task-${Date.now()}`;
       state.tasks[id] = {
@@ -74,9 +77,23 @@ const kanbanSlice = createSlice({
       };
       state.columns[action.payload.columnId].taskIds.push(id);
     },
+    //update
+    updateTask(
+      state,
+      action: PayloadAction<{
+        id: string;
+        changes: Partial<Task>;
+      }>,
+    ) {
+      const { id, changes } = action.payload;
+      state.tasks[id] = {
+        ...state.tasks[id],
+        ...changes,
+      };
+    },
   },
 });
 
-export const { moveTask, addTask } = kanbanSlice.actions;
+export const { moveTask, addTask, updateTask } = kanbanSlice.actions;
 
 export default kanbanSlice.reducer;

@@ -15,7 +15,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import type { RootState } from "../store/store";
-import { moveTask, addTask } from "../store/kanbanSlice";
+import { moveTask, addTask, updateTask } from "../store/kanbanSlice";
 
 export default function Kanban() {
   const dispatch = useDispatch();
@@ -57,6 +57,14 @@ export default function Kanban() {
     dispatch(addTask({ columnId, title }));
     setOpen(false);
   };
+
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    value: "",
+    owner: "",
+  });
 
   return (
     <>
@@ -112,7 +120,17 @@ export default function Kanban() {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              sx={{ marginBottom: 2 }}
+                              sx={{ marginBottom: 2, cursor: "pointer" }}
+                              onClick={() => {
+                                const t = tasks[task.id];
+                                setSelectedTaskId(task.id);
+                                setForm({
+                                  title: t.title || "",
+                                  description: t.description || "",
+                                  value: t.value?.toString() || "",
+                                  owner: t.owner || "",
+                                });
+                              }}
                             >
                               <CardContent>
                                 <Typography>{task.title}</Typography>
@@ -147,6 +165,70 @@ export default function Kanban() {
           <Button onClick={() => setOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleAdd}>
             Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Task Detail Dialog */}
+      <Dialog
+        open={selectedTaskId !== null}
+        onClose={() => setSelectedTaskId(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Card Details</DialogTitle>
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <TextField
+            label="Title"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
+          <TextField
+            label="Description"
+            multiline
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
+          <TextField
+            label="Deal Value"
+            type="number"
+            value={form.value}
+            onChange={(e) => setForm({ ...form, value: e.target.value })}
+          />
+          <TextField
+            label="Owner"
+            value={form.owner}
+            onChange={(e) => setForm({ ...form, owner: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedTaskId(null)}>Cancel</Button>
+
+          <Button
+            variant="contained"
+            onClick={() => {
+              if (!selectedTaskId) return;
+
+              dispatch(
+                updateTask({
+                  id: selectedTaskId,
+                  changes: {
+                    title: form.title,
+                    description: form.description,
+                    value: Number(form.value) || undefined,
+                    owner: form.owner,
+                  },
+                }),
+              );
+              setSelectedTaskId(null);
+            }}
+          >
+            Save
           </Button>
         </DialogActions>
       </Dialog>
