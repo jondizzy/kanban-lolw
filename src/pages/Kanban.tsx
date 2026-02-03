@@ -12,20 +12,27 @@ import {
   TextField,
 } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+// import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import type { RootState } from "../store/store";
-import { moveTask, addTask, updateTask } from "../store/kanbanSlice";
+// import type { RootState } from "../store/store";
+import { moveTask, updateTask, createTask } from "../store/kanbanSlice";
+// import { createAsyncThunk } from "@reduxjs/toolkit";
+// import axios from "axios";
+import api from "../api/axiosApi";
 
 export default function Kanban() {
-  const dispatch = useDispatch();
-  const { tasks, columns, columnOrder } = useSelector(
-    (state: RootState) => state.kanban,
-  ); //end useSelector
+  //states
+  const dispatch = useAppDispatch();
+  const { tasks, columns, columnOrder } = useAppSelector(
+    (state) => state.kanban,
+  );
 
   const [open, setOpen] = useState(false);
   const [columnId, setColumnId] = useState("");
   const [title, setTitle] = useState("");
+  const [department, setDepartment] = useState("");
+  const [transactionType, setTransactionType] = useState("");
 
   const onDragEnd = (result: any) => {
     const { destination, source, draggableId } = result;
@@ -53,8 +60,21 @@ export default function Kanban() {
   };
 
   const handleAdd = () => {
-    if (!title.trim()) return;
-    dispatch(addTask({ columnId, title }));
+    console.log("ADD CLICKED", {
+      title,
+      department,
+      transactionType,
+      columnId,
+    });
+    if (!title.trim() || !department || !transactionType) return;
+    dispatch(
+      createTask({
+        columnId,
+        title,
+        department,
+        transactionType,
+      }),
+    );
     setOpen(false);
   };
 
@@ -134,6 +154,15 @@ export default function Kanban() {
                             >
                               <CardContent>
                                 <Typography>{task.title}</Typography>
+                                {task.cardCode && (
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: "block" }}
+                                  >
+                                    {task.cardCode}
+                                  </Typography>
+                                )}
                               </CardContent>
                             </Card>
                           )}
@@ -154,11 +183,21 @@ export default function Kanban() {
         <DialogTitle>Add Card</DialogTitle>
         <DialogContent>
           <TextField
+            label="Department"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value.toUpperCase())}
+          />
+          <TextField
             autoFocus
             fullWidth
             label="Card title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+          />
+          <TextField
+            label="Transaction Type"
+            value={transactionType}
+            onChange={(e) => setTransactionType(e.target.value.toUpperCase())}
           />
         </DialogContent>
         <DialogActions>
