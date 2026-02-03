@@ -1,15 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
 import api from "../api/axiosApi";
 export type Task = {
   id: string;
   title: string;
   cardCode: string;
   description?: string;
-  value?: number;
-  owner?: string;
+  value?: number; //deal value
+  owner?: string; //sales responsible
+  item?: string;
+  quantity?: number;
+  uom?: string;
+  total?: number;
+  customerName?: string;
+  pricePerUom?: number;
 };
 
 type Column = {
@@ -25,12 +30,39 @@ type KanbanState = {
 };
 
 const initialState: KanbanState = {
-  tasks: {},
+  //tasks should be empty. if there's something inside { } then it's for demo purposes
+  tasks: {
+    "task-1": {
+      id: "task-1",
+      title: "Prepare demo flow",
+      description: "Show board, drag card, open dialog",
+      owner: "David",
+      value: 1000,
+      cardCode: "DEMO-001",
+    },
+    "task-2": {
+      id: "task-2",
+      title: "Style Kanban UI",
+      description: "Make it look like a real product",
+      owner: "David",
+      value: 2000,
+      cardCode: "DEMO-002",
+    },
+    "task-3": {
+      id: "task-3",
+      title: "Creating page routes",
+      description: "Pop-ups, notification badges",
+      owner: "David",
+      value: 1000,
+      cardCode: "DEMO-003",
+    },
+  },
+  //the comment above goes for taskIds too
   columns: {
     new_leads: {
       id: "new_leads",
       title: "New Leads",
-      taskIds: [],
+      taskIds: ["task-1", "task-2", "task-3"],
     },
     progressing: {
       id: "progressing",
