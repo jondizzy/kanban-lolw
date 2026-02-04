@@ -65,7 +65,7 @@ export default function CardDetailDialog({
       </DialogTitle>
 
       <DialogContent sx={{ pt: 0 }}>
-        {/* Before divider */}
+        {/* Upper Left */}
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid size={6}>
             <Grid container spacing={2}>
@@ -93,7 +93,7 @@ export default function CardDetailDialog({
                 <TextField
                   label="Deal Value (IDR)"
                   fullWidth
-                  value={formatRupiah(Number(form.value))}
+                  value={formatRupiah(Number(form.total))}
                   onChange={(e) => {
                     const raw = e.target.value.replace(/[^\d]/g, "");
                     setForm({ ...form, value: Number(raw) });
@@ -112,22 +112,23 @@ export default function CardDetailDialog({
             </Grid>
 
             <Divider sx={{ my: 3 }} />
-
-            {/* Item section */}
+            {/* Bottom Left */}
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Activities
             </Typography>
             <Accordion defaultExpanded>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2">To dos</Typography>
+                <Typography variant="body2">To-dos</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Typography variant="caption" color="text.secondary">
-                  • Card created
-                  <br />
-                  • Moved to New Leads
-                  <br />• Deal value updated
-                </Typography>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={6}
+                  onChange={(e) =>
+                    setForm({ ...form, activity: e.target.value })
+                  }
+                ></TextField>
               </AccordionDetails>
             </Accordion>
           </Grid>
@@ -152,7 +153,7 @@ export default function CardDetailDialog({
                   No items added yet
                 </Typography>
               )}
-
+              {/* Right Side */}
               <Grid container spacing={1}>
                 {form.items.map((row, index) => (
                   <Grid container spacing={1} key={index}>
@@ -172,7 +173,7 @@ export default function CardDetailDialog({
                         </IconButton>
                       </Tooltip>
                     </Grid>
-                    <Grid size={4}>
+                    <Grid size={7}>
                       <TextField
                         label="Item"
                         size="small"
@@ -185,7 +186,6 @@ export default function CardDetailDialog({
                         }}
                       />
                     </Grid>
-
                     <Grid size={2}>
                       <TextField
                         label="Qty"
@@ -200,7 +200,6 @@ export default function CardDetailDialog({
                         }}
                       />
                     </Grid>
-
                     <Grid size={2}>
                       <TextField
                         label="UOM"
@@ -214,10 +213,10 @@ export default function CardDetailDialog({
                         }}
                       />
                     </Grid>
-
-                    <Grid size={3}>
+                    <Grid size={6}>
                       <TextField
-                        label="Price / UOM"
+                        sx={{ mt: 1.5 }}
+                        label="Unit price"
                         size="small"
                         fullWidth
                         value={row.pricePerUom}
@@ -230,10 +229,21 @@ export default function CardDetailDialog({
                         }}
                       />
                     </Grid>
+                    <Grid size={6}>
+                      <TextField
+                        sx={{ mt: 1.5 }}
+                        label="Subtotal"
+                        size="small"
+                        fullWidth
+                        value={formatRupiah(row.subtotal)}
+                        slotProps={{ input: { readOnly: true } }}
+                      ></TextField>
+                    </Grid>
                   </Grid>
                 ))}
               </Grid>
               <Button
+                sx={{ mt: 2 }}
                 size="small"
                 onClick={() =>
                   setForm((prev: CardFormState) => ({

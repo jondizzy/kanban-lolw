@@ -60,15 +60,7 @@ const initialState: KanbanState = {
       owner: "David",
       value: 1000,
       cardCode: "DEMO-003",
-      items: [
-        {
-          item: "Sample Product",
-          quantity: 2,
-          uom: "pcs",
-          pricePerUom: 500,
-          subtotal: 1000,
-        },
-      ],
+      items: [],
     },
   },
   //the comment above goes for taskIds too

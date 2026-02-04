@@ -16,6 +16,7 @@ export type Task = {
   value?: number;
   items: LineItem[];
   total?: number;
+  activity?: string;
 };
 export type CardFormState = {
   title: string;
@@ -24,6 +25,7 @@ export type CardFormState = {
   customerName?: string;
   owner?: string;
   value?: number; //deal value
+  activity?: string;
 
   items: LineItem[];
   total?: number; //sum(subtotal)

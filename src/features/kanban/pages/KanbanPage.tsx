@@ -4,7 +4,14 @@ import { updateTask } from "../../../store/kanbanSlice";
 import KanbanBoard from "../components/KanbanBoard";
 import AddCardDialog from "../components/AddCardDialog";
 import CardDetailDialog from "../components/CardDetailDialog";
-import { Box, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+} from "@mui/material";
 import type { LineItem, CardFormState } from "../../../store/kanbanTypes";
 
 // type CardFormState = {
@@ -25,12 +32,14 @@ export default function KanbanPage() {
 
   const [addOpen, setAddOpen] = useState(false);
   const [activeColumnId, setActiveColumnId] = useState("");
+  const [search, setSearch] = useState("");
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [form, setForm] = useState<CardFormState>({
     title: "",
     items: [],
     total: 0,
+    value: 0,
   });
   //roles
   type Role = "AG" | "FD" | "BM" | "MNG";
@@ -54,12 +63,13 @@ export default function KanbanPage() {
   const visibleColumnIds = ROLE_COLUMN_ACCESS[role];
   //auto count total feature
   useEffect(() => {
-    const total = form.items.reduce((sum, row) => sum + row.subtotal, 0);
+    const nextTotal = form.items.reduce((sum, row) => sum + row.subtotal, 0);
 
-    if (form.total !== total) {
+    if (form.total !== nextTotal) {
       setForm((prev) => ({
         ...prev,
-        total,
+        total: nextTotal,
+        value: prev.value || nextTotal,
       }));
     }
   }, [form.items]);
@@ -76,8 +86,8 @@ export default function KanbanPage() {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "flex-end",
           alignItems: "center",
+          gap: 2,
           px: 3,
           py: 1.5,
           borderBottom: "1px solid",
@@ -85,23 +95,47 @@ export default function KanbanPage() {
           bgcolor: "background.paper",
         }}
       >
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel id="role-select-label">Division</InputLabel>
-          <Select
-            labelId="role-select-label"
-            value={role}
-            label="Division"
-            onChange={(e) => setRole(e.target.value as Role)}
-          >
-            <MenuItem value="AG">AG</MenuItem>
-            <MenuItem value="FD">FD</MenuItem>
-            <MenuItem value="BM">BM</MenuItem>
-            <MenuItem value="MNG">MNG</MenuItem>
-          </Select>
-        </FormControl>
+        <TextField
+          size="small"
+          placeholder="Search cards…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ width: 260 }}
+        />
+
+        {/* keep your role selector on the right */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            px: 3,
+            py: 1.5,
+            borderBottom: "1px solid",
+            borderColor: "divider",
+            bgcolor: "background.paper",
+            marginLeft: "auto",
+          }}
+        >
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel id="role-select-label">Division</InputLabel>
+            <Select
+              labelId="role-select-label"
+              value={role}
+              label="Division"
+              onChange={(e) => setRole(e.target.value as Role)}
+            >
+              <MenuItem value="AG">AG</MenuItem>
+              <MenuItem value="FD">FD</MenuItem>
+              <MenuItem value="BM">BM</MenuItem>
+              <MenuItem value="MNG">MNG</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
       </Box>
 
       <KanbanBoard
+        search={search}
         visibleColumnIds={visibleColumnIds}
         onAddCard={(colId) => {
           setActiveColumnId(colId);
