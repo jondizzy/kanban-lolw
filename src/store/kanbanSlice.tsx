@@ -2,20 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api/axiosApi";
-export type Task = {
-  id: string;
-  title: string;
-  cardCode: string;
-  description?: string;
-  value?: number; //deal value
-  owner?: string; //sales responsible
-  item?: string;
-  quantity?: number;
-  uom?: string;
-  total?: number;
-  customerName?: string;
-  pricePerUom?: number;
-};
+import type { Task } from "./kanbanTypes";
 
 type Column = {
   id: string;
@@ -39,6 +26,15 @@ const initialState: KanbanState = {
       owner: "David",
       value: 1000,
       cardCode: "DEMO-001",
+      items: [
+        {
+          item: "Sample Product",
+          quantity: 2,
+          uom: "pcs",
+          pricePerUom: 500,
+          subtotal: 1000,
+        },
+      ],
     },
     "task-2": {
       id: "task-2",
@@ -47,6 +43,15 @@ const initialState: KanbanState = {
       owner: "David",
       value: 2000,
       cardCode: "DEMO-002",
+      items: [
+        {
+          item: "Sample Product",
+          quantity: 2,
+          uom: "pcs",
+          pricePerUom: 500,
+          subtotal: 1000,
+        },
+      ],
     },
     "task-3": {
       id: "task-3",
@@ -55,6 +60,15 @@ const initialState: KanbanState = {
       owner: "David",
       value: 1000,
       cardCode: "DEMO-003",
+      items: [
+        {
+          item: "Sample Product",
+          quantity: 2,
+          uom: "pcs",
+          pricePerUom: 500,
+          subtotal: 1000,
+        },
+      ],
     },
   },
   //the comment above goes for taskIds too
@@ -64,9 +78,34 @@ const initialState: KanbanState = {
       title: "New Leads",
       taskIds: ["task-1", "task-2", "task-3"],
     },
-    progressing: {
-      id: "progressing",
-      title: "Progressing",
+    ag_qualify: {
+      id: "ag_qualify",
+      title: "Qualifying Prospect",
+      taskIds: [],
+    },
+    ag_interest: {
+      id: "ag_interest",
+      title: "Interest Prospect",
+      taskIds: [],
+    },
+    ag_hot: {
+      id: "ag_hot",
+      title: "Hot Prospect",
+      taskIds: [],
+    },
+    fd_food: {
+      id: "fd_food",
+      title: "Food Trial",
+      taskIds: [],
+    },
+    fd_long: {
+      id: "fd_long",
+      title: "Long Trial",
+      taskIds: [],
+    },
+    bm_bid: {
+      id: "bm_bid",
+      title: "Bidding",
       taskIds: [],
     },
     won: {
@@ -80,7 +119,17 @@ const initialState: KanbanState = {
       taskIds: [],
     },
   },
-  columnOrder: ["new_leads", "progressing", "won", "lost"],
+  columnOrder: [
+    "new_leads",
+    "ag_qualify",
+    "ag_interest",
+    "ag_hot",
+    "fd_food",
+    "fd_long",
+    "bm_bid",
+    "won",
+    "lost",
+  ],
 };
 
 export const createTask = createAsyncThunk(
@@ -161,6 +210,8 @@ const kanbanSlice = createSlice({
         description: task.Description,
         value: task.Value,
         owner: task.Owner,
+        items: [],
+        total: 0,
       };
       state.columns[columnId].taskIds.push(id);
     });

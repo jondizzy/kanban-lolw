@@ -5,14 +5,22 @@ import { moveTask } from "../../../store/kanbanSlice";
 import KanbanColumn from "./KanbanColumn";
 
 type Props = {
+  visibleColumnIds: string[];
   onAddCard: (columnId: string) => void;
   onCardClick: (task: any) => void;
 };
 
-export default function KanbanBoard({ onAddCard, onCardClick }: Props) {
+export default function KanbanBoard({
+  visibleColumnIds,
+  onAddCard,
+  onCardClick,
+}: Props) {
   const dispatch = useAppDispatch();
   const { tasks, columns, columnOrder } = useAppSelector(
     (state) => state.kanban,
+  );
+  const filteredColumnOrder = columnOrder.filter((columnId) =>
+    visibleColumnIds.includes(columnId),
   );
 
   const onDragEnd = (result: any) => {
@@ -44,11 +52,12 @@ export default function KanbanBoard({ onAddCard, onCardClick }: Props) {
           px: 3,
           py: 2,
           overflowX: "auto",
+          alignItems: "flex-start",
           minHeight: "100vh",
-          backgroun: "linear-gradient(180def, #f7f9fc, #eef1f6",
+          background: "linear-gradient(180def, #f7f9fc, #eef1f6",
         }}
       >
-        {columnOrder.map((columnId) => (
+        {filteredColumnOrder.map((columnId) => (
           <KanbanColumn
             key={columnId}
             column={columns[columnId]}
