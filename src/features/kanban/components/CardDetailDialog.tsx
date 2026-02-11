@@ -20,12 +20,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import InputAdornment from "@mui/material/InputAdornment";
-``;
-import type {
-  LineItem,
-  CardFormState,
-  CardFormRedux,
-} from "../../../store/kanbanTypes";
+import type { CardFormState, CardFormRedux } from "../../../store/kanbanTypes";
 
 const formatRupiah = (value?: number) => {
   if (!value) return "";
