@@ -26,7 +26,7 @@ export default function AddCardDialog({ open, columnId, onClose }: any) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Add Card</DialogTitle>
       <DialogContent sx={{ display: "flex" }}>
         <FormControl sx={{ m: 1, minWidth: 120 }}>
@@ -40,13 +40,7 @@ export default function AddCardDialog({ open, columnId, onClose }: any) {
             <MenuItem value="BM">BM</MenuItem>
           </Select>
         </FormControl>
-        <TextField
-          label="Card title"
-          fullWidth
-          margin="dense"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        <TextField disabled fullWidth margin="dense" />
         <FormControl sx={{ m: 1, minWidth: 120 }}>
           <Select
             value={transactionType}
@@ -57,6 +51,14 @@ export default function AddCardDialog({ open, columnId, onClose }: any) {
             <MenuItem value="R">R (recurring)</MenuItem>
           </Select>
         </FormControl>
+        <TextField
+          sx={{ minWidth: 400 }}
+          label="Card title"
+          fullWidth
+          margin="dense"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
