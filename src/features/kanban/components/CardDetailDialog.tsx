@@ -12,11 +12,20 @@ import {
   Typography,
   Tooltip,
   IconButton,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import type { LineItem, CardFormState } from "../../../store/kanbanTypes";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import InputAdornment from "@mui/material/InputAdornment";
+``;
+import type {
+  LineItem,
+  CardFormState,
+  CardFormRedux,
+} from "../../../store/kanbanTypes";
 
 const formatRupiah = (value?: number) => {
   if (!value) return "";
@@ -26,20 +35,20 @@ const formatRupiah = (value?: number) => {
     maximumFractionDigits: 0,
   }).format(value);
 };
-type Props = {
-  open: boolean;
-  form: CardFormState;
-  setForm: React.Dispatch<React.SetStateAction<CardFormState>>;
-  onClose: () => void;
-  onSave: () => void;
-};
+// type Props = {
+//   open: boolean;
+//   form: CardFormState;
+//   setForm: React.Dispatch<React.SetStateAction<CardFormState>>;
+//   onClose: () => void;
+//   onSave: () => void;
+// };
 export default function CardDetailDialog({
   open,
   form,
   setForm,
   onClose,
   onSave,
-}: Props) {
+}: CardFormRedux) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle
@@ -51,11 +60,29 @@ export default function CardDetailDialog({
           pb: "2",
         }}
       >
-        <Typography fontWeight={600}>
-          {form.cardCode
-            ? `${form.cardCode} — ${form.title || "Untitled"}`
-            : form.title || "Card Details"}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography fontWeight={600}>
+            {form.cardCode}
+            {/* {form.cardCode
+              ? `${form.cardCode} — ${form.title || "Untitled"}`
+              : form.title || "Card Details"} */}
+          </Typography>
+          <TextField
+            variant="standard"
+            value={form.title || ""}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EditOutlinedIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </Box>
+
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button onClick={onClose}>Cancel</Button>
           <Button variant="contained" onClick={onSave}>
@@ -79,15 +106,36 @@ export default function CardDetailDialog({
                   }
                 />
               </Grid>
-              <Grid size={12}>
+              <Grid size={10}>
                 <TextField
-                  label="Customer Name"
+                  label="Customer"
                   fullWidth
                   value={form.customerName || ""}
                   onChange={(e) =>
                     setForm({ ...form, customerName: e.target.value })
                   }
                 />
+              </Grid>
+              <Grid size={2}>
+                <Select
+                  sx={{ minWidth: 80 }}
+                  value={form.customerGroup}
+                  onChange={(e) =>
+                    setForm({ ...form, customerGroup: e.target.value })
+                  }
+                  displayEmpty
+                >
+                  <MenuItem value="internal">INT</MenuItem>
+                  <MenuItem value="eksternal">EXT</MenuItem>
+                </Select>
+                {/* <TextField
+                  label="Group"
+                  fullWidth
+                  value={form.customerName || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, customerName: e.target.value })
+                  }
+                /> */}
               </Grid>
               <Grid size={6}>
                 <TextField
@@ -114,11 +162,11 @@ export default function CardDetailDialog({
             <Divider sx={{ my: 3 }} />
             {/* Bottom Left */}
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Activities
+              Activities & Notes
             </Typography>
-            <Accordion defaultExpanded>
+            <Accordion defaultExpanded sx={{ mb: 2 }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2">To-dos</Typography>
+                <Typography variant="body2">Meetings & MoMs</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <TextField
@@ -126,7 +174,37 @@ export default function CardDetailDialog({
                   multiline
                   rows={6}
                   onChange={(e) =>
-                    setForm({ ...form, activity: e.target.value })
+                    setForm({ ...form, activityEarly: e.target.value })
+                  }
+                ></TextField>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion defaultExpanded sx={{ mb: 2 }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="body2">Negotiations & Offers</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={6}
+                  onChange={(e) =>
+                    setForm({ ...form, activityMid: e.target.value })
+                  }
+                ></TextField>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion defaultExpanded sx={{ mb: 2 }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="body2">Final Deal</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={6}
+                  onChange={(e) =>
+                    setForm({ ...form, activityLate: e.target.value })
                   }
                 ></TextField>
               </AccordionDetails>
@@ -180,8 +258,12 @@ export default function CardDetailDialog({
                         fullWidth
                         value={row.item}
                         onChange={(e) => {
-                          const next = [...form.items];
-                          next[index].item = e.target.value;
+                          const next = form.items.map((row, i) =>
+                            i === index
+                              ? { ...row, item: e.target.value }
+                              : row,
+                          );
+
                           setForm({ ...form, items: next });
                         }}
                       />

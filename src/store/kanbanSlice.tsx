@@ -2,19 +2,19 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api/axiosApi";
-import type { Task } from "./kanbanTypes";
+import type { Task, KanbanState } from "./kanbanTypes";
 
-type Column = {
-  id: string;
-  title: string;
-  taskIds: string[];
-};
+// type Column = {
+//   id: string;
+//   title: string;
+//   taskIds: string[];
+// };
 
-type KanbanState = {
-  tasks: Record<string, Task>;
-  columns: Record<string, Column>;
-  columnOrder: string[];
-};
+// type KanbanState = {
+//   tasks: Record<string, Task>;
+//   columns: Record<string, Column>;
+//   columnOrder: string[];
+// };
 
 const initialState: KanbanState = {
   //tasks should be empty. if there's something inside { } then it's for demo purposes
@@ -62,13 +62,57 @@ const initialState: KanbanState = {
       cardCode: "DEMO-003",
       items: [],
     },
+    "task-4": {
+      id: "task-4",
+      title: "Fixing 'title' fields",
+      description: "",
+      owner: "",
+      value: 0,
+      cardCode: "AG202600001N",
+      items: [],
+    },
+    "task-5": {
+      id: "task-5",
+      title: "Smoothen onDrop card animation",
+      description: "",
+      owner: "",
+      value: 0,
+      cardCode: "DEMO-004",
+      items: [],
+    },
+    "task-6": {
+      id: "task-6",
+      title: "API payload opmitization",
+      description: "",
+      owner: "",
+      value: 0,
+      cardCode: "DEMO-005",
+      items: [],
+    },
+    "task-7": {
+      id: "task-7",
+      title: "Whitespace removal",
+      description: "",
+      owner: "",
+      value: 0,
+      cardCode: "DEMO-006",
+      items: [],
+    },
   },
   //the comment above goes for taskIds too
   columns: {
     new_leads: {
       id: "new_leads",
       title: "New Leads",
-      taskIds: ["task-1", "task-2", "task-3"],
+      taskIds: [
+        "task-1",
+        "task-2",
+        "task-3",
+        "task-4",
+        "task-5",
+        "task-6",
+        "task-7",
+      ],
     },
     ag_qualify: {
       id: "ag_qualify",
