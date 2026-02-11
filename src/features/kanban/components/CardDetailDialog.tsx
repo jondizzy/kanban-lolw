@@ -30,13 +30,6 @@ const formatRupiah = (value?: number) => {
     maximumFractionDigits: 0,
   }).format(value);
 };
-// type Props = {
-//   open: boolean;
-//   form: CardFormState;
-//   setForm: React.Dispatch<React.SetStateAction<CardFormState>>;
-//   onClose: () => void;
-//   onSave: () => void;
-// };
 export default function CardDetailDialog({
   open,
   form,
@@ -55,7 +48,9 @@ export default function CardDetailDialog({
           pb: "2",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 2, width: "49%" }}
+        >
           <Typography fontWeight={600}>
             {form.cardCode}
             {/* {form.cardCode
@@ -63,13 +58,14 @@ export default function CardDetailDialog({
               : form.title || "Card Details"} */}
           </Typography>
           <TextField
+            fullWidth
             variant="standard"
             value={form.title || ""}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             slotProps={{
               input: {
-                startAdornment: (
-                  <InputAdornment position="start">
+                endAdornment: (
+                  <InputAdornment position="end">
                     <EditOutlinedIcon fontSize="small" />
                   </InputAdornment>
                 ),
@@ -113,7 +109,7 @@ export default function CardDetailDialog({
               </Grid>
               <Grid size={2}>
                 <Select
-                  sx={{ minWidth: 80 }}
+                  fullWidth
                   value={form.customerGroup}
                   onChange={(e) =>
                     setForm({ ...form, customerGroup: e.target.value })
@@ -123,14 +119,6 @@ export default function CardDetailDialog({
                   <MenuItem value="internal">INT</MenuItem>
                   <MenuItem value="eksternal">EXT</MenuItem>
                 </Select>
-                {/* <TextField
-                  label="Group"
-                  fullWidth
-                  value={form.customerName || ""}
-                  onChange={(e) =>
-                    setForm({ ...form, customerName: e.target.value })
-                  }
-                /> */}
               </Grid>
               <Grid size={6}>
                 <TextField
@@ -159,7 +147,7 @@ export default function CardDetailDialog({
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Activities & Notes
             </Typography>
-            <Accordion defaultExpanded sx={{ mb: 2 }}>
+            <Accordion sx={{ mb: 2 }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="body2">Meetings & MoMs</Typography>
               </AccordionSummary>
@@ -174,7 +162,7 @@ export default function CardDetailDialog({
                 ></TextField>
               </AccordionDetails>
             </Accordion>
-            <Accordion defaultExpanded sx={{ mb: 2 }}>
+            <Accordion sx={{ mb: 2 }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="body2">Negotiations & Offers</Typography>
               </AccordionSummary>
@@ -189,7 +177,7 @@ export default function CardDetailDialog({
                 ></TextField>
               </AccordionDetails>
             </Accordion>
-            <Accordion defaultExpanded sx={{ mb: 2 }}>
+            <Accordion sx={{ mb: 2 }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="body2">Final Deal</Typography>
               </AccordionSummary>

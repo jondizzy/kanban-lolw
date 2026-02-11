@@ -47,6 +47,20 @@ export default function KanbanColumn({
           >
             {column.title}
           </Typography>
+          <Typography
+            variant="subtitle2"
+            fontWeight={400}
+            sx={{ textAlign: "center" }}
+          >
+            Revenue accumulated:
+          </Typography>
+          <Typography
+            variant="subtitle2"
+            fontWeight={400}
+            sx={{ mt: -1, mb: 1, textAlign: "center" }}
+          >
+            Rp880.000.000,00
+          </Typography>
 
           <Button
             size="small"

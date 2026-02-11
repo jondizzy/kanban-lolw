@@ -91,11 +91,11 @@ const initialState: KanbanState = {
     },
     "task-7": {
       id: "task-7",
-      title: "Whitespace removal",
+      title: "Pembelian furnitur untuk kantor",
       description: "",
       owner: "",
       value: 0,
-      cardCode: "DEMO-006",
+      cardCode: "BM2026010001N",
       items: [],
     },
   },

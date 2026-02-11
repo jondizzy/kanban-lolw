@@ -53,7 +53,7 @@ export default function AddCardDialog({ open, columnId, onClose }: any) {
         </FormControl>
         <TextField
           sx={{ minWidth: 400 }}
-          label="Card title"
+          label="Leads Name"
           fullWidth
           margin="dense"
           value={title}
