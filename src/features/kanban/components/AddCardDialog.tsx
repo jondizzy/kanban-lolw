@@ -27,7 +27,7 @@ export default function AddCardDialog({ open, columnId, onClose }: any) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Add Card</DialogTitle>
+      <DialogTitle>Add Leads</DialogTitle>
       <DialogContent sx={{ display: "flex" }}>
         <FormControl sx={{ m: 1, minWidth: 120 }}>
           <Select

@@ -21,15 +21,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import InputAdornment from "@mui/material/InputAdornment";
 import type { CardFormState, CardFormRedux } from "../../../store/kanbanTypes";
+import formatRupiah from "../utils/currencyFormatter";
 
-const formatRupiah = (value?: number) => {
-  if (!value) return "";
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-};
 export default function CardDetailDialog({
   open,
   form,

@@ -2,6 +2,7 @@ import { Paper, Typography, Button } from "@mui/material";
 import { Droppable } from "@hello-pangea/dnd";
 import CardPreview from "./CardPreview";
 import { columnColors } from "../utils/columnColors";
+import formatRupiah from "../utils/currencyFormatter";
 
 export default function KanbanColumn({
   column,
@@ -9,6 +10,11 @@ export default function KanbanColumn({
   onAddCard,
   onCardClick,
 }: any) {
+  const revenue = column.taskIds.reduce((sum: number, taskId: string) => {
+    const task = tasks[taskId];
+    return sum + (Number(task?.value) || 0);
+  }, 0);
+
   return (
     <Droppable droppableId={column.id} direction="vertical">
       {(provided) => (
@@ -59,7 +65,7 @@ export default function KanbanColumn({
             fontWeight={400}
             sx={{ mt: -1, mb: 1, textAlign: "center" }}
           >
-            Rp880.000.000,00
+            {formatRupiah(revenue)}
           </Typography>
 
           <Button

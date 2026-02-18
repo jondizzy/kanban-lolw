@@ -12,7 +12,7 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
-import type { LineItem, CardFormState } from "../../../store/kanbanTypes";
+import type { CardFormState } from "../../../store/kanbanTypes";
 
 // type CardFormState = {
 //   title: string;
@@ -175,11 +175,11 @@ export default function KanbanPage() {
               changes: {
                 title: form.title,
                 description: form.description,
-                value: Number(form.value) || undefined,
+                value: Number(form.total) || 0,
                 owner: form.owner,
                 cardCode: form.cardCode || "",
                 customerName: form.customerName || "",
-                items: form.items && form.items.length > 0 ? form.items : [],
+                items: form.items,
                 total: form.total || 0,
               },
             }),

@@ -23,7 +23,7 @@ const initialState: KanbanState = {
       id: "task-1",
       title: "Prepare demo flow",
       description: "Show board, drag card, open dialog",
-      owner: "David",
+      owner: "Jonas",
       value: 1000,
       cardCode: "DEMO-001",
       items: [
@@ -41,7 +41,7 @@ const initialState: KanbanState = {
       title: "Style Kanban UI",
       description: "Make it look like a real product",
       owner: "David",
-      value: 2000,
+      value: 0,
       cardCode: "DEMO-002",
       items: [
         {
