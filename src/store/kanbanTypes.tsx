@@ -59,3 +59,5 @@ export type KanbanState = {
   columns: Record<string, Column>;
   columnOrder: string[];
 };
+
+export type Role = "AG" | "FD" | "BM" | "MNG";

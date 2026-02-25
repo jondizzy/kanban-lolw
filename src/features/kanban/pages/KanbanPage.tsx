@@ -12,7 +12,7 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
-import type { CardFormState } from "../../../store/kanbanTypes";
+import type { CardFormState, Role } from "../../../store/kanbanTypes";
 
 // type CardFormState = {
 //   title: string;
@@ -42,7 +42,6 @@ export default function KanbanPage() {
     value: 0,
   });
   //roles
-  type Role = "AG" | "FD" | "BM" | "MNG";
   const [role, setRole] = useState<Role>("MNG");
   const ROLE_COLUMN_ACCESS: Record<Role, string[]> = {
     AG: ["new_leads", "ag_qualify", "ag_interest", "ag_hot", "won", "lost"],
