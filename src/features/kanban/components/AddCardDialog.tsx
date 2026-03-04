@@ -9,8 +9,9 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { AddCardProps } from "../../../store/kanbanTypes";
+import api from "../../../api/axiosApi";
 
 export default function AddCardDialog({
   open,
@@ -21,6 +22,43 @@ export default function AddCardDialog({
   const [title, setTitle] = useState("");
   const [department, setDepartment] = useState("");
   const [transactionType, setTransactionType] = useState("");
+  const [nextNumber, setNextNumber] = useState<string>("");
+  const [loadingNumber, setLoadingNumber] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadNextNumber = async () => {
+      if (!open || !department || !transactionType) {
+        setNextNumber("");
+        return;
+      }
+
+      setLoadingNumber(true);
+      try {
+        const res = await api.get("cards/next-number", {
+          params: { department, transactionType },
+        });
+        if (!cancelled) {
+          setNextNumber(String(res.data?.nextNumber ?? ""));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setNextNumber("");
+          console.error("Failed to load next running number:", err);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingNumber(false);
+        }
+      }
+    };
+
+    loadNextNumber();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, department, transactionType]);
 
   const handleAdd = () => {
     if (!title || !department || !transactionType) return;
@@ -35,6 +73,7 @@ export default function AddCardDialog({
     setTitle("");
     setDepartment("");
     setTransactionType("");
+    setNextNumber("");
     onClose();
   };
 
@@ -53,7 +92,13 @@ export default function AddCardDialog({
             <MenuItem value="BM">BM</MenuItem>
           </Select>
         </FormControl>
-        <TextField disabled fullWidth margin="dense" />
+        <TextField
+          disabled
+          fullWidth
+          margin="dense"
+          label="Running Number"
+          value={loadingNumber ? "Loading..." : nextNumber}
+        />
         <FormControl sx={{ m: 1, minWidth: 120 }}>
           <Select
             value={transactionType}

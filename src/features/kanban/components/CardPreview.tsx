@@ -25,11 +25,23 @@ export default function CardPreview({ task, index, onClick }: any) {
             <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
               {task.title}
             </Typography>
-            {task.cardCode && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              {task.cardCode && (
+                <Typography variant="caption" color="text.secondary">
+                  {task.cardCode}
+                </Typography>
+              )}
+
               <Typography variant="caption" color="text.secondary">
-                {task.cardCode}
+                {task.owner}
               </Typography>
-            )}
+            </Box>
             <Box sx={{ m: 1 }}></Box>
           </CardContent>
         </Card>
