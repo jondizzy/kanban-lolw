@@ -158,6 +158,10 @@ export default function KanbanPage() {
             owner: task.owner || "",
             cardCode: task.cardCode || "",
             customerName: task.customerName || "",
+            customerGroup: task.customerGroup || "",
+            activityEarly: task.activityEarly || "",
+            activityMid: task.activityMid || "",
+            activityLate: task.activityLate || "",
             items: task.items && task.items.length > 0 ? task.items : [],
             total: task.total || 0,
           });
@@ -185,28 +189,32 @@ export default function KanbanPage() {
         form={form}
         setForm={setForm}
         onClose={() => setSelectedTaskId(null)}
-        onSave={() => {
+        onSave={async () => {
           if (!selectedTaskId) return;
-          dispatch(
-            saveCardData({
-              cardId: selectedTaskId,
-              taskData: {
-                title: form.title,
-                description: form.description,
-                value: Number(form.total) || 0,
-                owner: form.owner,
-                cardCode: form.cardCode || "",
-                customerName: form.customerName || "",
-                customerGroup: form.customerGroup || "",
-                items: form.items,
-                total: form.total || 0,
-                activityEarly: form.activityEarly || "",
-                activityMid: form.activityMid || "",
-                activityLate: form.activityLate || "",
-              },
-            }),
-          );
-          setSelectedTaskId(null);
+          try {
+            await dispatch(
+              saveCardData({
+                cardId: selectedTaskId,
+                taskData: {
+                  title: form.title,
+                  description: form.description,
+                  value: Number(form.total) || 0,
+                  owner: form.owner,
+                  cardCode: form.cardCode || "",
+                  customerName: form.customerName || "",
+                  customerGroup: form.customerGroup || "",
+                  items: form.items,
+                  total: form.total || 0,
+                  activityEarly: form.activityEarly || "",
+                  activityMid: form.activityMid || "",
+                  activityLate: form.activityLate || "",
+                },
+              }),
+            ).unwrap();
+            setSelectedTaskId(null);
+          } catch (err) {
+            console.error("Failed to save card:", err);
+          }
         }}
       />
     </>

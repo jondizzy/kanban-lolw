@@ -92,6 +92,20 @@ type ApiCard = {
   Value?: number | null;
   Owner?: string | null;
   Status?: string | null;
+  CustomerName?: string | null;
+  CustomerGroup?: string | null;
+  ActivityEarly?: string | null;
+  ActivityMid?: string | null;
+  ActivityLate?: string | null;
+  Items?: ApiCardItem[];
+};
+
+type ApiCardItem = {
+  item?: string;
+  quantity?: number;
+  uom?: string;
+  pricePerUom?: number;
+  subtotal?: number;
 };
 
 export const createTask = createAsyncThunk(
@@ -147,7 +161,18 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
       description: card.Description ?? "",
       value: Number(card.Value ?? 0),
       owner: card.Owner ?? "",
-      items: [],
+      customerName: card.CustomerName ?? "",
+      customerGroup: card.CustomerGroup ?? "",
+      activityEarly: card.ActivityEarly ?? "",
+      activityMid: card.ActivityMid ?? "",
+      activityLate: card.ActivityLate ?? "",
+      items: (card.Items ?? []).map((it) => ({
+        item: it.item ?? "",
+        quantity: Number(it.quantity ?? 0),
+        uom: it.uom ?? "",
+        pricePerUom: Number(it.pricePerUom ?? 0),
+        subtotal: Number(it.subtotal ?? 0),
+      })),
       total: Number(card.Value ?? 0),
     };
 
@@ -212,6 +237,7 @@ const kanbanSlice = createSlice({
     builder.addCase(saveCardData.fulfilled, (state, action) => {
       const { cardId, task } = action.payload;
       const saved = task?.card;
+      const savedItems = Array.isArray(task?.items) ? task.items : undefined;
       if (state.tasks[cardId]) {
         state.tasks[cardId] = {
           ...state.tasks[cardId],
@@ -219,6 +245,24 @@ const kanbanSlice = createSlice({
           description: saved?.Description ?? state.tasks[cardId].description,
           value: Number(saved?.Value ?? state.tasks[cardId].value ?? 0),
           owner: saved?.Owner ?? state.tasks[cardId].owner,
+          customerName:
+            saved?.CustomerName ?? state.tasks[cardId].customerName ?? "",
+          customerGroup:
+            saved?.CustomerGroup ?? state.tasks[cardId].customerGroup ?? "",
+          activityEarly:
+            saved?.ActivityEarly ?? state.tasks[cardId].activityEarly ?? "",
+          activityMid:
+            saved?.ActivityMid ?? state.tasks[cardId].activityMid ?? "",
+          activityLate:
+            saved?.ActivityLate ?? state.tasks[cardId].activityLate ?? "",
+          items:
+            savedItems?.map((it: ApiCardItem) => ({
+              item: it.item ?? "",
+              quantity: Number(it.quantity ?? 0),
+              uom: it.uom ?? "",
+              pricePerUom: Number(it.pricePerUom ?? 0),
+              subtotal: Number(it.subtotal ?? 0),
+            })) ?? state.tasks[cardId].items,
         };
       }
     });

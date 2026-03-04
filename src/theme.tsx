@@ -7,6 +7,11 @@ const theme = createTheme({
   typography: {
     fontFamily: "Roboto, system-ui, sans-serif",
   },
+  palette: {
+    background: {
+      default: "#ffffff", // main page background
+    },
+  },
 });
 
 export default theme;

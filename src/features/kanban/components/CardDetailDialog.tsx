@@ -103,12 +103,13 @@ export default function CardDetailDialog({
               <Grid size={2}>
                 <Select
                   fullWidth
-                  value={form.customerGroup}
+                  value={form.customerGroup || ""}
                   onChange={(e) =>
                     setForm({ ...form, customerGroup: e.target.value })
                   }
                   displayEmpty
                 >
+                  <MenuItem value="">-</MenuItem>
                   <MenuItem value="internal">INT</MenuItem>
                   <MenuItem value="eksternal">EXT</MenuItem>
                 </Select>
@@ -149,6 +150,7 @@ export default function CardDetailDialog({
                   fullWidth
                   multiline
                   rows={6}
+                  value={form.activityEarly || ""}
                   onChange={(e) =>
                     setForm({ ...form, activityEarly: e.target.value })
                   }
@@ -164,6 +166,7 @@ export default function CardDetailDialog({
                   fullWidth
                   multiline
                   rows={6}
+                  value={form.activityMid || ""}
                   onChange={(e) =>
                     setForm({ ...form, activityMid: e.target.value })
                   }
@@ -179,6 +182,7 @@ export default function CardDetailDialog({
                   fullWidth
                   multiline
                   rows={6}
+                  value={form.activityLate || ""}
                   onChange={(e) =>
                     setForm({ ...form, activityLate: e.target.value })
                   }
