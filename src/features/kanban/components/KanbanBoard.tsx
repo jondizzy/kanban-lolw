@@ -3,20 +3,21 @@ import { DragDropContext } from "@hello-pangea/dnd";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { moveTask } from "../../../store/kanbanSlice";
 import KanbanColumn from "./KanbanColumn";
+import type { KanbanProps } from "../../../store/kanbanTypes";
 
-type Props = {
-  search: string;
-  visibleColumnIds: string[];
-  onAddCard: (columnId: string) => void;
-  onCardClick: (task: any) => void;
-};
+// type Props = {
+//   search: string;
+//   visibleColumnIds: string[];
+//   onAddCard: (columnId: string) => void;
+//   onCardClick: (task: any) => void;
+// };
 
 export default function KanbanBoard({
   visibleColumnIds,
   onAddCard,
   onCardClick,
   search,
-}: Props) {
+}: KanbanProps) {
   const dispatch = useAppDispatch();
   const { tasks, columns, columnOrder } = useAppSelector(
     (state) => state.kanban,

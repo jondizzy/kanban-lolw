@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAppDispatch } from "../../../store/hooks";
-import { updateTask } from "../../../store/kanbanSlice";
+import {
+  saveCardData,
+  fetchCards,
+  createTask,
+} from "../../../store/kanbanSlice";
 import KanbanBoard from "../components/KanbanBoard";
 import AddCardDialog from "../components/AddCardDialog";
 import CardDetailDialog from "../components/CardDetailDialog";
@@ -72,6 +76,11 @@ export default function KanbanPage() {
       }));
     }
   }, [form.items]);
+
+  // Fetch cards from API on mount
+  useEffect(() => {
+    dispatch(fetchCards());
+  }, [dispatch]);
 
   // const [form, setForm] = useState({
   //   title: "",
@@ -145,7 +154,7 @@ export default function KanbanPage() {
           setForm({
             title: task.title || "",
             description: task.description || "",
-            value: task.value?.toString() || "",
+            value: Number(task.value || 0),
             owner: task.owner || "",
             cardCode: task.cardCode || "",
             customerName: task.customerName || "",
@@ -159,8 +168,18 @@ export default function KanbanPage() {
         open={addOpen}
         columnId={activeColumnId}
         onClose={() => setAddOpen(false)}
+        onCreate={(payload) => {
+          dispatch(
+            createTask({
+              columnId: activeColumnId,
+              title: payload.title,
+              department: payload.department,
+              transactionType: payload.transactionType,
+            }),
+          );
+          setAddOpen(false);
+        }}
       />
-
       <CardDetailDialog
         open={selectedTaskId !== null}
         form={form}
@@ -169,17 +188,21 @@ export default function KanbanPage() {
         onSave={() => {
           if (!selectedTaskId) return;
           dispatch(
-            updateTask({
-              id: selectedTaskId,
-              changes: {
+            saveCardData({
+              cardId: selectedTaskId,
+              taskData: {
                 title: form.title,
                 description: form.description,
                 value: Number(form.total) || 0,
                 owner: form.owner,
                 cardCode: form.cardCode || "",
                 customerName: form.customerName || "",
+                customerGroup: form.customerGroup || "",
                 items: form.items,
                 total: form.total || 0,
+                activityEarly: form.activityEarly || "",
+                activityMid: form.activityMid || "",
+                activityLate: form.activityLate || "",
               },
             }),
           );

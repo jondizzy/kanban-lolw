@@ -15,4 +15,9 @@ export default defineConfig({
       },
     },
   },
+  // build: {
+  //   outDir:
+  //     "C:\Users\natha\OneDrive\Documents\_VSPROJECT\_DASHBOARD\Dashboard-NKP\public\kanban",
+  //   emptyOutDir: true,
+  // },
 });

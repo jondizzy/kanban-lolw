@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography } from "@mui/material";
+import { Box, Card, CardContent, Typography } from "@mui/material";
 import { Draggable } from "@hello-pangea/dnd";
 
 export default function CardPreview({ task, index, onClick }: any) {
@@ -30,6 +30,7 @@ export default function CardPreview({ task, index, onClick }: any) {
                 {task.cardCode}
               </Typography>
             )}
+            <Box sx={{ m: 1 }}></Box>
           </CardContent>
         </Card>
       )}

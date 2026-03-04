@@ -16,156 +16,82 @@ import type { Task, KanbanState } from "./kanbanTypes";
 //   columnOrder: string[];
 // };
 
+const columnOrder: string[] = [
+  "new_leads",
+  "ag_qualify",
+  "ag_interest",
+  "ag_hot",
+  "fd_food",
+  "fd_long",
+  "bm_bid",
+  "won",
+  "lost",
+];
+
+const createEmptyColumns = (): KanbanState["columns"] => ({
+  new_leads: {
+    id: "new_leads",
+    title: "New Leads",
+    taskIds: [],
+  },
+  ag_qualify: {
+    id: "ag_qualify",
+    title: "Qualifying Prospect",
+    taskIds: [],
+  },
+  ag_interest: {
+    id: "ag_interest",
+    title: "Interest Prospect",
+    taskIds: [],
+  },
+  ag_hot: {
+    id: "ag_hot",
+    title: "Hot Prospect",
+    taskIds: [],
+  },
+  fd_food: {
+    id: "fd_food",
+    title: "Food Trial",
+    taskIds: [],
+  },
+  fd_long: {
+    id: "fd_long",
+    title: "Long Trial",
+    taskIds: [],
+  },
+  bm_bid: {
+    id: "bm_bid",
+    title: "Bidding",
+    taskIds: [],
+  },
+  won: {
+    id: "won",
+    title: "Won",
+    taskIds: [],
+  },
+  lost: {
+    id: "lost",
+    title: "Lost",
+    taskIds: [],
+  },
+});
+
 const initialState: KanbanState = {
-  //tasks should be empty. if there's something inside { } then it's for demo purposes
-  tasks: {
-    "task-1": {
-      id: "task-1",
-      title: "Prepare demo flow",
-      description: "Show board, drag card, open dialog",
-      owner: "Jonas",
-      value: 1000,
-      cardCode: "DEMO-001",
-      items: [
-        {
-          item: "Sample Product",
-          quantity: 2,
-          uom: "pcs",
-          pricePerUom: 500,
-          subtotal: 1000,
-        },
-      ],
-    },
-    "task-2": {
-      id: "task-2",
-      title: "Style Kanban UI",
-      description: "Make it look like a real product",
-      owner: "David",
-      value: 0,
-      cardCode: "DEMO-002",
-      items: [
-        {
-          item: "Sample Product",
-          quantity: 2,
-          uom: "pcs",
-          pricePerUom: 500,
-          subtotal: 1000,
-        },
-      ],
-    },
-    "task-3": {
-      id: "task-3",
-      title: "Creating page routes",
-      description: "Pop-ups, notification badges",
-      owner: "David",
-      value: 1000,
-      cardCode: "DEMO-003",
-      items: [],
-    },
-    "task-4": {
-      id: "task-4",
-      title: "Fixing 'title' fields",
-      description: "",
-      owner: "",
-      value: 0,
-      cardCode: "AG202600001N",
-      items: [],
-    },
-    "task-5": {
-      id: "task-5",
-      title: "Smoothen onDrop card animation",
-      description: "",
-      owner: "",
-      value: 0,
-      cardCode: "DEMO-004",
-      items: [],
-    },
-    "task-6": {
-      id: "task-6",
-      title: "API payload opmitization",
-      description: "",
-      owner: "",
-      value: 0,
-      cardCode: "DEMO-005",
-      items: [],
-    },
-    "task-7": {
-      id: "task-7",
-      title: "Pembelian furnitur untuk kantor",
-      description: "",
-      owner: "",
-      value: 0,
-      cardCode: "BM2026010001N",
-      items: [],
-    },
-  },
-  //the comment above goes for taskIds too
-  columns: {
-    new_leads: {
-      id: "new_leads",
-      title: "New Leads",
-      taskIds: [
-        "task-1",
-        "task-2",
-        "task-3",
-        "task-4",
-        "task-5",
-        "task-6",
-        "task-7",
-      ],
-    },
-    ag_qualify: {
-      id: "ag_qualify",
-      title: "Qualifying Prospect",
-      taskIds: [],
-    },
-    ag_interest: {
-      id: "ag_interest",
-      title: "Interest Prospect",
-      taskIds: [],
-    },
-    ag_hot: {
-      id: "ag_hot",
-      title: "Hot Prospect",
-      taskIds: [],
-    },
-    fd_food: {
-      id: "fd_food",
-      title: "Food Trial",
-      taskIds: [],
-    },
-    fd_long: {
-      id: "fd_long",
-      title: "Long Trial",
-      taskIds: [],
-    },
-    bm_bid: {
-      id: "bm_bid",
-      title: "Bidding",
-      taskIds: [],
-    },
-    won: {
-      id: "won",
-      title: "Won",
-      taskIds: [],
-    },
-    lost: {
-      id: "lost",
-      title: "Lost",
-      taskIds: [],
-    },
-  },
-  columnOrder: [
-    "new_leads",
-    "ag_qualify",
-    "ag_interest",
-    "ag_hot",
-    "fd_food",
-    "fd_long",
-    "bm_bid",
-    "won",
-    "lost",
-  ],
+  tasks: {},
+  columns: createEmptyColumns(),
+  columnOrder,
+};
+
+type ApiCard = {
+  id?: number | string;
+  ID?: number | string;
+  Id?: number | string;
+  Title?: string;
+  CardCode?: string;
+  Description?: string;
+  Value?: number | null;
+  Owner?: string | null;
+  Status?: string | null;
 };
 
 export const createTask = createAsyncThunk(
@@ -191,6 +117,46 @@ export const createTask = createAsyncThunk(
   },
 );
 
+export const saveCardData = createAsyncThunk(
+  "kanban/saveCardData",
+  async ({ cardId, taskData }: { cardId: string; taskData: Partial<Task> }) => {
+    const res = await api.put(`cards/${cardId}`, taskData);
+    return { cardId, task: res.data };
+  },
+);
+
+export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
+  const res = await api.get("cards");
+
+  const tasks: Record<string, Task> = {};
+  const columns = createEmptyColumns();
+
+  (res.data as ApiCard[]).forEach((card, index) => {
+    const rawId = card.id ?? card.ID ?? card.Id;
+    let id = String(rawId ?? `fallback-${index}`);
+    if (tasks[id]) {
+      id = `${id}-${index}`;
+    }
+    const status =
+      card.Status && columns[card.Status] ? card.Status : "new_leads";
+
+    tasks[id] = {
+      id,
+      title: card.Title ?? "",
+      cardCode: card.CardCode ?? "",
+      description: card.Description ?? "",
+      value: Number(card.Value ?? 0),
+      owner: card.Owner ?? "",
+      items: [],
+      total: Number(card.Value ?? 0),
+    };
+
+    columns[status].taskIds.push(id);
+  });
+
+  return { tasks, columns, columnOrder };
+});
+
 const kanbanSlice = createSlice({
   name: "kanban",
   initialState,
@@ -211,15 +177,7 @@ const kanbanSlice = createSlice({
       state.columns[sourceCol].taskIds.splice(sourceIndex, 1);
       state.columns[destCol].taskIds.splice(destIndex, 0, taskId);
     },
-    //add
-    // addTask(state, action: PayloadAction<{ columnId: string; title: string }>) {
-    //   const id = `task-${Date.now()}`;
-    //   state.tasks[id] = {
-    //     id,
-    //     title: action.payload.title,
-    //   };
-    //   state.columns[action.payload.columnId].taskIds.push(id);
-    // },
+
     //update
     updateTask(
       state,
@@ -238,7 +196,7 @@ const kanbanSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(createTask.fulfilled, (state, action) => {
       const { columnId, task } = action.payload;
-      const id = task.id.toString();
+      const id = String(task.id ?? task.ID ?? task.Id);
       state.tasks[id] = {
         id,
         title: task.Title,
@@ -250,6 +208,25 @@ const kanbanSlice = createSlice({
         total: 0,
       };
       state.columns[columnId].taskIds.push(id);
+    });
+    builder.addCase(saveCardData.fulfilled, (state, action) => {
+      const { cardId, task } = action.payload;
+      const saved = task?.card;
+      if (state.tasks[cardId]) {
+        state.tasks[cardId] = {
+          ...state.tasks[cardId],
+          title: saved?.Title ?? state.tasks[cardId].title,
+          description: saved?.Description ?? state.tasks[cardId].description,
+          value: Number(saved?.Value ?? state.tasks[cardId].value ?? 0),
+          owner: saved?.Owner ?? state.tasks[cardId].owner,
+        };
+      }
+    });
+    builder.addCase(fetchCards.fulfilled, (state, action) => {
+      const { tasks, columns, columnOrder } = action.payload;
+      state.tasks = tasks;
+      state.columns = columns;
+      state.columnOrder = columnOrder;
     });
   },
 });

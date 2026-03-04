@@ -10,18 +10,31 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useState } from "react";
-import { useAppDispatch } from "../../../store/hooks";
-import { createTask } from "../../../store/kanbanSlice";
+import type { AddCardProps } from "../../../store/kanbanTypes";
 
-export default function AddCardDialog({ open, columnId, onClose }: any) {
-  const dispatch = useAppDispatch();
+export default function AddCardDialog({
+  open,
+  columnId: _columnId,
+  onClose,
+  onCreate,
+}: AddCardProps) {
   const [title, setTitle] = useState("");
   const [department, setDepartment] = useState("");
   const [transactionType, setTransactionType] = useState("");
 
   const handleAdd = () => {
-    if (!title.trim() || !department || !transactionType) return;
-    dispatch(createTask({ columnId, title, department, transactionType }));
+    if (!title || !department || !transactionType) return;
+
+    onCreate({
+      title,
+      department,
+      transactionType,
+    });
+
+    // reset
+    setTitle("");
+    setDepartment("");
+    setTransactionType("");
     onClose();
   };
 

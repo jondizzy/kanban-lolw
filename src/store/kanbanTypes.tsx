@@ -61,3 +61,21 @@ export type KanbanState = {
 };
 
 export type Role = "AG" | "FD" | "BM" | "MNG";
+
+export type KanbanProps = {
+  search: string;
+  visibleColumnIds: string[];
+  onAddCard: (columnId: string) => void;
+  onCardClick: (task: any) => void;
+};
+
+export type AddCardProps = {
+  open: boolean;
+  columnId: string;
+  onClose: () => void;
+  onCreate: (payload: {
+    title: string;
+    department: string;
+    transactionType: string;
+  }) => void;
+};
