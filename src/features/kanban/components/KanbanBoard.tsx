@@ -1,16 +1,9 @@
 import { Box } from "@mui/material";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { moveTask } from "../../../store/kanbanSlice";
+import { moveTask, updateCardStatus } from "../../../store/kanbanSlice";
 import KanbanColumn from "./KanbanColumn";
 import type { KanbanProps } from "../../../store/kanbanTypes";
-
-// type Props = {
-//   search: string;
-//   visibleColumnIds: string[];
-//   onAddCard: (columnId: string) => void;
-//   onCardClick: (task: any) => void;
-// };
 
 export default function KanbanBoard({
   visibleColumnIds,
@@ -26,7 +19,7 @@ export default function KanbanBoard({
     visibleColumnIds.includes(columnId),
   );
 
-  const onDragEnd = (result: any) => {
+  const onDragEnd = async (result: any) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
     if (
@@ -34,6 +27,9 @@ export default function KanbanBoard({
       destination.index === source.index
     )
       return;
+    if (!visibleColumnIds.includes(destination.droppableId)) {
+      return;
+    }
 
     dispatch(
       moveTask({
@@ -44,6 +40,26 @@ export default function KanbanBoard({
         taskId: draggableId,
       }),
     );
+
+    try {
+      await dispatch(
+        updateCardStatus({
+          cardId: draggableId,
+          status: destination.droppableId,
+        }),
+      ).unwrap();
+    } catch (err) {
+      console.error("Failed to persist card status:", err);
+      dispatch(
+        moveTask({
+          sourceCol: destination.droppableId,
+          destCol: source.droppableId,
+          sourceIndex: destination.index,
+          destIndex: source.index,
+          taskId: draggableId,
+        }),
+      );
+    }
   };
   const normalizedSearch = search.toLowerCase();
 

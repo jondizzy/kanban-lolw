@@ -23,7 +23,7 @@ export default function CardPreview({ task, index, onClick }: any) {
         >
           <CardContent sx={{ pb: "12px !important" }}>
             <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
-              {task.title}
+              {task.cardCode} — {task.title}
             </Typography>
             <Box
               sx={{
@@ -32,11 +32,11 @@ export default function CardPreview({ task, index, onClick }: any) {
                 alignItems: "center",
               }}
             >
-              {task.cardCode && (
-                <Typography variant="caption" color="text.secondary">
-                  {task.cardCode}
-                </Typography>
-              )}
+              {/* {task.cardCode && ( */}
+              <Typography variant="caption" color="text.secondary">
+                {task.value}
+              </Typography>
+              {/*  )} */}
 
               <Typography variant="caption" color="text.secondary">
                 {task.owner}

@@ -17,22 +17,45 @@ import {
   TextField,
 } from "@mui/material";
 import type { CardFormState, Role } from "../../../store/kanbanTypes";
+import { roleVisibleColumns } from "../utils/roleColumn";
 
-// type CardFormState = {
-//   title: string;
-//   description?: string;
-//   cardCode?: string;
+const resolveStoredUserRole = () => {
+  if (typeof window === "undefined") {
+    return "";
+  }
 
-//   customerName?: string;
-//   value?: number;
-//   owner?: string;
+  return (
+    localStorage.getItem("userRole") ??
+    localStorage.getItem("role") ??
+    sessionStorage.getItem("userRole") ??
+    sessionStorage.getItem("role") ??
+    ""
+  );
+};
 
-//   items: LineItem[];
-//   total?: number;
-// };
+const resolveDivisionFromUserRole = (userRole: string): Role => {
+  const normalizedRole = userRole.trim().toUpperCase();
+
+  if (normalizedRole === "AG" || normalizedRole.includes("AG")) {
+    return "AG";
+  }
+
+  if (normalizedRole === "FD" || normalizedRole.includes("FD")) {
+    return "FD";
+  }
+
+  if (normalizedRole === "BM" || normalizedRole.includes("BM")) {
+    return "BM";
+  }
+
+  return "MNG";
+};
 
 export default function KanbanPage() {
   const dispatch = useAppDispatch();
+  const userRole = resolveStoredUserRole();
+  const isKanbanAdmin = userRole.trim().toLowerCase() === "kanban_admin";
+  const defaultDivisionRole = resolveDivisionFromUserRole(userRole);
 
   const [addOpen, setAddOpen] = useState(false);
   const [activeColumnId, setActiveColumnId] = useState("");
@@ -45,25 +68,15 @@ export default function KanbanPage() {
     total: 0,
     value: 0,
   });
-  //roles
-  const [role, setRole] = useState<Role>("MNG");
-  const ROLE_COLUMN_ACCESS: Record<Role, string[]> = {
-    AG: ["new_leads", "ag_qualify", "ag_interest", "ag_hot", "won", "lost"],
-    FD: ["new_leads", "fd_food", "fd_long", "won", "lost"],
-    BM: ["new_leads", "bm_bid", "won", "lost"],
-    MNG: [
-      "new_leads",
-      "ag_qualify",
-      "ag_interest",
-      "ag_hot",
-      "fd_food",
-      "fd_long",
-      "bm_bid",
-      "won",
-      "lost",
-    ],
-  };
-  const visibleColumnIds = ROLE_COLUMN_ACCESS[role];
+  const [role, setRole] = useState<Role>(defaultDivisionRole);
+  const visibleColumnIds = roleVisibleColumns[role];
+
+  useEffect(() => {
+    if (!isKanbanAdmin && role !== defaultDivisionRole) {
+      setRole(defaultDivisionRole);
+    }
+  }, [defaultDivisionRole, isKanbanAdmin, role]);
+
   //auto count total feature
   useEffect(() => {
     const nextTotal = form.items.reduce((sum, row) => sum + row.subtotal, 0);
@@ -131,6 +144,7 @@ export default function KanbanPage() {
               labelId="role-select-label"
               value={role}
               label="Division"
+              disabled={!isKanbanAdmin}
               onChange={(e) => setRole(e.target.value as Role)}
             >
               <MenuItem value="AG">AG</MenuItem>
@@ -144,6 +158,7 @@ export default function KanbanPage() {
 
       <KanbanBoard
         search={search}
+        // visibleColumnIds={visibleColumnIds}
         visibleColumnIds={visibleColumnIds}
         onAddCard={(colId) => {
           setActiveColumnId(colId);

@@ -96,8 +96,12 @@ export default function AddCardDialog({
           disabled
           fullWidth
           margin="dense"
-          label="Running Number"
-          value={loadingNumber ? "Loading..." : nextNumber}
+          label="Card Number"
+          value={
+            loadingNumber
+              ? "Loading..."
+              : nextNumber.toString().padStart(5, "0")
+          }
         />
         <FormControl sx={{ m: 1, minWidth: 120 }}>
           <Select

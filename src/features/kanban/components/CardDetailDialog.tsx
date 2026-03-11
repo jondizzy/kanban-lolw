@@ -23,6 +23,15 @@ import InputAdornment from "@mui/material/InputAdornment";
 import type { CardFormState, CardFormRedux } from "../../../store/kanbanTypes";
 import formatRupiah from "../utils/currencyFormatter";
 
+const parseNumericInput = (value: string) => {
+  if (value.trim() === "") {
+    return 0;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export default function CardDetailDialog({
   open,
   form,
@@ -44,12 +53,7 @@ export default function CardDetailDialog({
         <Box
           sx={{ display: "flex", alignItems: "center", gap: 2, width: "49%" }}
         >
-          <Typography fontWeight={600}>
-            {form.cardCode}
-            {/* {form.cardCode
-              ? `${form.cardCode} — ${form.title || "Untitled"}`
-              : form.title || "Card Details"} */}
-          </Typography>
+          <Typography fontWeight={600}>{form.cardCode}</Typography>
           <TextField
             fullWidth
             variant="standard"
@@ -117,6 +121,7 @@ export default function CardDetailDialog({
               <Grid size={6}>
                 <TextField
                   label="Deal Value (IDR)"
+                  disabled
                   fullWidth
                   value={formatRupiah(Number(form.total))}
                   onChange={(e) => {
@@ -257,7 +262,10 @@ export default function CardDetailDialog({
                         value={row.quantity}
                         onChange={(e) => {
                           const next = [...form.items];
-                          next[index].quantity = Number(e.target.value);
+                          const quantity = parseNumericInput(e.target.value);
+                          next[index].quantity = quantity;
+                          next[index].subtotal =
+                            quantity * next[index].pricePerUom;
                           setForm({ ...form, items: next });
                         }}
                       />
@@ -280,13 +288,17 @@ export default function CardDetailDialog({
                         sx={{ mt: 1.5 }}
                         label="Unit price"
                         size="small"
+                        type="number"
                         fullWidth
                         value={row.pricePerUom}
                         onChange={(e) => {
                           const next = [...form.items];
-                          next[index].pricePerUom = Number(e.target.value);
+                          const pricePerUom = parseNumericInput(
+                            e.target.value,
+                          );
+                          next[index].pricePerUom = pricePerUom;
                           next[index].subtotal =
-                            next[index].quantity * next[index].pricePerUom;
+                            next[index].quantity * pricePerUom;
                           setForm({ ...form, items: next });
                         }}
                       />

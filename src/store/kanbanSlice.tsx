@@ -2,19 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api/axiosApi";
-import type { Task, KanbanState } from "./kanbanTypes";
-
-// type Column = {
-//   id: string;
-//   title: string;
-//   taskIds: string[];
-// };
-
-// type KanbanState = {
-//   tasks: Record<string, Task>;
-//   columns: Record<string, Column>;
-//   columnOrder: string[];
-// };
+import type { Task, KanbanState, ApiCard, ApiCardItem } from "./kanbanTypes";
 
 const columnOrder: string[] = [
   "new_leads",
@@ -82,31 +70,31 @@ const initialState: KanbanState = {
   columnOrder,
 };
 
-type ApiCard = {
-  id?: number | string;
-  ID?: number | string;
-  Id?: number | string;
-  Title?: string;
-  CardCode?: string;
-  Description?: string;
-  Value?: number | null;
-  Owner?: string | null;
-  Status?: string | null;
-  CustomerName?: string | null;
-  CustomerGroup?: string | null;
-  ActivityEarly?: string | null;
-  ActivityMid?: string | null;
-  ActivityLate?: string | null;
-  Items?: ApiCardItem[];
-};
+// type ApiCard = {
+//   id?: number | string;
+//   ID?: number | string;
+//   Id?: number | string;
+//   Title?: string;
+//   CardCode?: string;
+//   Description?: string;
+//   Value?: number | null;
+//   Owner?: string | null;
+//   Status?: string | null;
+//   CustomerName?: string | null;
+//   CustomerGroup?: string | null;
+//   ActivityEarly?: string | null;
+//   ActivityMid?: string | null;
+//   ActivityLate?: string | null;
+//   Items?: ApiCardItem[];
+// };
 
-type ApiCardItem = {
-  item?: string;
-  quantity?: number;
-  uom?: string;
-  pricePerUom?: number;
-  subtotal?: number;
-};
+// type ApiCardItem = {
+//   item?: string;
+//   quantity?: number;
+//   uom?: string;
+//   pricePerUom?: number;
+//   subtotal?: number;
+// };
 
 export const createTask = createAsyncThunk(
   "kanban/createTask",
@@ -139,6 +127,14 @@ export const saveCardData = createAsyncThunk(
   },
 );
 
+export const updateCardStatus = createAsyncThunk(
+  "kanban/updateCardStatus",
+  async ({ cardId, status }: { cardId: string; status: string }) => {
+    const res = await api.put(`cards/${cardId}`, { status });
+    return { cardId, status, task: res.data };
+  },
+);
+
 export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
   const res = await api.get("cards");
 
@@ -157,6 +153,7 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
     tasks[id] = {
       id,
       title: card.Title ?? "",
+      status,
       cardCode: card.CardCode ?? "",
       description: card.Description ?? "",
       value: Number(card.Value ?? 0),
@@ -225,6 +222,7 @@ const kanbanSlice = createSlice({
       state.tasks[id] = {
         id,
         title: task.Title,
+        status: columnId,
         cardCode: task.CardCode,
         description: task.Description,
         value: task.Value,
@@ -242,6 +240,7 @@ const kanbanSlice = createSlice({
         state.tasks[cardId] = {
           ...state.tasks[cardId],
           title: saved?.Title ?? state.tasks[cardId].title,
+          status: saved?.Status ?? state.tasks[cardId].status,
           description: saved?.Description ?? state.tasks[cardId].description,
           value: Number(saved?.Value ?? state.tasks[cardId].value ?? 0),
           owner: saved?.Owner ?? state.tasks[cardId].owner,
@@ -264,6 +263,12 @@ const kanbanSlice = createSlice({
               subtotal: Number(it.subtotal ?? 0),
             })) ?? state.tasks[cardId].items,
         };
+      }
+    });
+    builder.addCase(updateCardStatus.fulfilled, (state, action) => {
+      const { cardId, status } = action.payload;
+      if (state.tasks[cardId]) {
+        state.tasks[cardId].status = status;
       }
     });
     builder.addCase(fetchCards.fulfilled, (state, action) => {

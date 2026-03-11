@@ -12,6 +12,7 @@ export type Task = {
   id: string;
   title: string;
   description?: string;
+  status?: string;
   cardCode?: string;
   customerName?: string;
   customerGroup?: string;
@@ -78,4 +79,30 @@ export type AddCardProps = {
     department: string;
     transactionType: string;
   }) => void;
+};
+
+export type ApiCard = {
+  id?: number | string;
+  ID?: number | string;
+  Id?: number | string;
+  Title?: string;
+  CardCode?: string;
+  Description?: string;
+  Value?: number | null;
+  Owner?: string | null;
+  Status?: string | null;
+  CustomerName?: string | null;
+  CustomerGroup?: string | null;
+  ActivityEarly?: string | null;
+  ActivityMid?: string | null;
+  ActivityLate?: string | null;
+  Items?: ApiCardItem[];
+};
+
+export type ApiCardItem = {
+  item?: string;
+  quantity?: number;
+  uom?: string;
+  pricePerUom?: number;
+  subtotal?: number;
 };
