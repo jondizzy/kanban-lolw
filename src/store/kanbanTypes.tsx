@@ -106,3 +106,10 @@ export type ApiCardItem = {
   pricePerUom?: number;
   subtotal?: number;
 };
+
+export type AuthSession = {
+  user_id?: number | string | null;
+  username?: string | null;
+  role?: string | null;
+  isLoggedIn?: boolean;
+};

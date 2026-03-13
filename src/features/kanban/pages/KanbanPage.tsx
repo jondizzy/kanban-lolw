@@ -16,7 +16,12 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
-import type { CardFormState, Role } from "../../../store/kanbanTypes";
+import api from "../../../api/axiosApi";
+import type {
+  AuthSession,
+  CardFormState,
+  Role,
+} from "../../../store/kanbanTypes";
 import { roleVisibleColumns } from "../utils/roleColumn";
 
 const resolveStoredUserRole = () => {
@@ -31,6 +36,27 @@ const resolveStoredUserRole = () => {
     sessionStorage.getItem("role") ??
     ""
   );
+};
+
+const persistUserSession = (session: AuthSession) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const role = session.role?.trim() ?? "";
+  const username = session.username?.trim() ?? "";
+
+  if (role) {
+    localStorage.setItem("role", role);
+    localStorage.setItem("userRole", role);
+    sessionStorage.setItem("role", role);
+    sessionStorage.setItem("userRole", role);
+  }
+
+  if (username) {
+    localStorage.setItem("username", username);
+    sessionStorage.setItem("username", username);
+  }
 };
 
 const resolveDivisionFromUserRole = (userRole: string): Role => {
@@ -53,9 +79,7 @@ const resolveDivisionFromUserRole = (userRole: string): Role => {
 
 export default function KanbanPage() {
   const dispatch = useAppDispatch();
-  const userRole = resolveStoredUserRole();
-  const isKanbanAdmin = userRole.trim().toLowerCase() === "kanban_admin";
-  const defaultDivisionRole = resolveDivisionFromUserRole(userRole);
+  const [userRole, setUserRole] = useState(resolveStoredUserRole());
 
   const [addOpen, setAddOpen] = useState(false);
   const [activeColumnId, setActiveColumnId] = useState("");
@@ -66,10 +90,38 @@ export default function KanbanPage() {
     title: "",
     items: [],
     total: 0,
-    value: 0,
+      value: 0,
   });
+  const isKanbanAdmin = userRole.trim().toLowerCase() === "kanban_admin";
+  const defaultDivisionRole = resolveDivisionFromUserRole(userRole);
   const [role, setRole] = useState<Role>(defaultDivisionRole);
   const visibleColumnIds = roleVisibleColumns[role];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSession = async () => {
+      try {
+        const res = await api.get<AuthSession>("auth/me");
+        const nextRole = res.data?.role?.trim() ?? "";
+
+        if (!isMounted || !nextRole) {
+          return;
+        }
+
+        persistUserSession(res.data);
+        setUserRole(nextRole);
+      } catch (err) {
+        console.error("Failed to load auth session:", err);
+      }
+    };
+
+    void loadSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isKanbanAdmin && role !== defaultDivisionRole) {
