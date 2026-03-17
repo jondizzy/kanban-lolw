@@ -43,8 +43,16 @@ const persistUserSession = (session: AuthSession) => {
     return;
   }
 
-  const role = session.role?.trim() ?? "";
-  const username = session.username?.trim() ?? "";
+  const role =
+    session.role?.trim() ??
+    session.userRole?.trim() ??
+    session.Role?.trim() ??
+    "";
+  const username =
+    session.username?.trim() ??
+    session.userName?.trim() ??
+    session.Username?.trim() ??
+    "";
 
   if (role) {
     localStorage.setItem("role", role);
@@ -77,6 +85,15 @@ const resolveDivisionFromUserRole = (userRole: string): Role => {
   return "MNG";
 };
 
+const isKanbanAdminRole = (userRole: string) => {
+  const normalizedRole = userRole
+    .trim()
+    .replace(/^["']+|["']+$/g, "")
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+  return normalizedRole === "kanban_admin";
+};
+
 export default function KanbanPage() {
   const dispatch = useAppDispatch();
   const [userRole, setUserRole] = useState(resolveStoredUserRole());
@@ -90,9 +107,9 @@ export default function KanbanPage() {
     title: "",
     items: [],
     total: 0,
-      value: 0,
+    value: 0,
   });
-  const isKanbanAdmin = userRole.trim().toLowerCase() === "kanban_admin";
+  const isKanbanAdmin = isKanbanAdminRole(userRole);
   const defaultDivisionRole = resolveDivisionFromUserRole(userRole);
   const [role, setRole] = useState<Role>(defaultDivisionRole);
   const visibleColumnIds = roleVisibleColumns[role];
@@ -103,7 +120,11 @@ export default function KanbanPage() {
     const loadSession = async () => {
       try {
         const res = await api.get<AuthSession>("auth/me");
-        const nextRole = res.data?.role?.trim() ?? "";
+        const nextRole =
+          res.data?.role?.trim() ??
+          res.data?.userRole?.trim() ??
+          res.data?.Role?.trim() ??
+          "";
 
         if (!isMounted || !nextRole) {
           return;

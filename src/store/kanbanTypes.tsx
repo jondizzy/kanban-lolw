@@ -109,7 +109,13 @@ export type ApiCardItem = {
 
 export type AuthSession = {
   user_id?: number | string | null;
+  userId?: number | string | null;
+  UserID?: number | string | null;
   username?: string | null;
+  userName?: string | null;
+  Username?: string | null;
   role?: string | null;
+  userRole?: string | null;
+  Role?: string | null;
   isLoggedIn?: boolean;
 };
