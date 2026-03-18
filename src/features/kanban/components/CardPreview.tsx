@@ -34,21 +34,23 @@ export default function CardPreview({ task, index, onClick, onDelete }: any) {
             >
               <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
                 {task.cardCode} — {task.title}
-                <IconButton
-                  size="small"
-                  sx={{
-                    color: "error",
-                    opacity: 0.7,
-                    "&:hover": { opacity: 1 },
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(task.id);
-                  }}
-                >
-                  <DeleteOutlineIcon fontSize="small" />
-                </IconButton>
               </Typography>
+              <IconButton
+                size="small"
+                sx={{
+                  color: "error",
+                  opacity: 0.7,
+                  "&:hover": { opacity: 1 },
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm("Delete this card?")) {
+                    onDelete(task.id);
+                  }
+                }}
+              >
+                <DeleteOutlineIcon fontSize="small" />
+              </IconButton>
             </Box>
             <Box
               sx={{
