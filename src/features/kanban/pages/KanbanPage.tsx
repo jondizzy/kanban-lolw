@@ -4,6 +4,7 @@ import {
   saveCardData,
   fetchCards,
   createTask,
+  deleteTask,
 } from "../../../store/kanbanSlice";
 import KanbanBoard from "../components/KanbanBoard";
 import AddCardDialog from "../components/AddCardDialog";
@@ -91,7 +92,7 @@ const isKanbanAdminRole = (userRole: string) => {
     .replace(/^["']+|["']+$/g, "")
     .toLowerCase()
     .replace(/[\s-]+/g, "_");
-  return normalizedRole === "kanban_admin";
+  return normalizedRole === "kanban_admin" || normalizedRole === "admin";
 };
 
 export default function KanbanPage() {
@@ -101,6 +102,16 @@ export default function KanbanPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [activeColumnId, setActiveColumnId] = useState("");
   const [search, setSearch] = useState("");
+  const handleDelete = async (taskId: string) => {
+    try {
+      await dispatch(deleteTask(taskId)).unwrap();
+      if (selectedTaskId === taskId) {
+        setSelectedTaskId(null);
+      }
+    } catch (err) {
+      console.error("Failed to delete card:", err);
+    }
+  };
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [form, setForm] = useState<CardFormState>({
@@ -254,6 +265,7 @@ export default function KanbanPage() {
             total: task.total || 0,
           });
         }}
+        onDelete={handleDelete}
       />
 
       <AddCardDialog

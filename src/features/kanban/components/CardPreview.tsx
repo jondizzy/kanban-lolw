@@ -1,7 +1,10 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import IconButton from "@mui/material/IconButton";
 import { Draggable } from "@hello-pangea/dnd";
+import formatRupiah from "../utils/currencyFormatter";
 
-export default function CardPreview({ task, index, onClick }: any) {
+export default function CardPreview({ task, index, onClick, onDelete }: any) {
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided) => (
@@ -22,9 +25,31 @@ export default function CardPreview({ task, index, onClick }: any) {
           }}
         >
           <CardContent sx={{ pb: "12px !important" }}>
-            <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
-              {task.cardCode} — {task.title}
-            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+                {task.cardCode} — {task.title}
+                <IconButton
+                  size="small"
+                  sx={{
+                    color: "error",
+                    opacity: 0.7,
+                    "&:hover": { opacity: 1 },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(task.id);
+                  }}
+                >
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </Typography>
+            </Box>
             <Box
               sx={{
                 display: "flex",
@@ -33,8 +58,12 @@ export default function CardPreview({ task, index, onClick }: any) {
               }}
             >
               {/* {task.cardCode && ( */}
-              <Typography variant="caption" color="text.secondary">
-                {task.value}
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                // value={formatRupiah(Number(task.value))}
+              >
+                {formatRupiah(Number(task.value))}
               </Typography>
               {/*  )} */}
 

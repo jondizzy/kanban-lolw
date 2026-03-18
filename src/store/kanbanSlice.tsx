@@ -119,6 +119,14 @@ export const createTask = createAsyncThunk(
   },
 );
 
+export const deleteTask = createAsyncThunk(
+  "kanban/deleteTask",
+  async (cardId: string) => {
+    await api.delete(`cards/${cardId}`);
+    return { cardId };
+  },
+);
+
 export const saveCardData = createAsyncThunk(
   "kanban/saveCardData",
   async ({ cardId, taskData }: { cardId: string; taskData: Partial<Task> }) => {
@@ -271,6 +279,24 @@ const kanbanSlice = createSlice({
         state.tasks[cardId].status = status;
       }
     });
+    builder.addCase(deleteTask.fulfilled, (state, action) => {
+      const { cardId } = action.payload;
+      const task = state.tasks[cardId];
+
+      if (!task) {
+        return;
+      }
+
+      const columnId = task.status;
+      if (columnId && state.columns[columnId]) {
+        state.columns[columnId].taskIds = state.columns[
+          columnId
+        ].taskIds.filter((id) => id !== cardId);
+      }
+
+      delete state.tasks[cardId];
+    });
+
     builder.addCase(fetchCards.fulfilled, (state, action) => {
       const { tasks, columns, columnOrder } = action.payload;
       state.tasks = tasks;

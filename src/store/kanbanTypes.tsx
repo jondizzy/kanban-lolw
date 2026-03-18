@@ -68,6 +68,7 @@ export type KanbanProps = {
   visibleColumnIds: string[];
   onAddCard: (columnId: string) => void;
   onCardClick: (task: any) => void;
+  onDelete: (taskId: string) => void;
 };
 
 export type AddCardProps = {

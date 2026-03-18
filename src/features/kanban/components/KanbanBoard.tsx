@@ -10,6 +10,7 @@ export default function KanbanBoard({
   onAddCard,
   onCardClick,
   search,
+  onDelete,
 }: KanbanProps) {
   const dispatch = useAppDispatch();
   const { tasks, columns, columnOrder } = useAppSelector(
@@ -100,6 +101,7 @@ export default function KanbanBoard({
               tasks={tasks}
               onAddCard={onAddCard}
               onCardClick={onCardClick}
+              onDelete={onDelete}
             />
           );
         })}

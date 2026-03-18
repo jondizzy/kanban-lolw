@@ -9,6 +9,7 @@ export default function KanbanColumn({
   tasks,
   onAddCard,
   onCardClick,
+  onDelete,
 }: any) {
   const revenue = column.taskIds.reduce((sum: number, taskId: string) => {
     const task = tasks[taskId];
@@ -219,6 +220,7 @@ export default function KanbanColumn({
                   task={tasks[taskId]}
                   index={index}
                   onClick={onCardClick}
+                  onDelete={onDelete}
                 />
               ))}
 
