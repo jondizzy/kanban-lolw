@@ -96,7 +96,7 @@ const isKanbanAdminRole = (userRole: string) => {
     .replace(/^["']+|["']+$/g, "")
     .toLowerCase()
     .replace(/[\s-]+/g, "_");
-  return normalizedRole === "kanban_admin" || normalizedRole === "Admin";
+  return normalizedRole === "kanban_admin" || normalizedRole === "admin";
 };
 
 export default function KanbanPage() {
