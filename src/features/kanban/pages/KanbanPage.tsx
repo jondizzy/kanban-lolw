@@ -75,6 +75,10 @@ const resolveDivisionFromUserRole = (userRole: string): Role => {
     return "AG";
   }
 
+  if (normalizedRole === "CH" || normalizedRole.includes("CH")) {
+    return "CH";
+  }
+
   if (normalizedRole === "FD" || normalizedRole.includes("FD")) {
     return "FD";
   }
@@ -232,6 +236,7 @@ export default function KanbanPage() {
               onChange={(e) => setRole(e.target.value as Role)}
             >
               <MenuItem value="AG">AG</MenuItem>
+              <MenuItem value="CH">CH</MenuItem>
               <MenuItem value="FD">FD</MenuItem>
               <MenuItem value="BM">BM</MenuItem>
               <MenuItem value="MNG">MNG</MenuItem>

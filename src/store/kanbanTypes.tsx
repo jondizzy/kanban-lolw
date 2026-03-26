@@ -61,7 +61,7 @@ export type KanbanState = {
   columnOrder: string[];
 };
 
-export type Role = "AG" | "FD" | "BM" | "MNG";
+export type Role = "AG" | "CH" | "FD" | "BM" | "MNG";
 
 export type KanbanProps = {
   search: string;

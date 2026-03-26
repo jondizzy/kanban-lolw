@@ -88,6 +88,7 @@ export default function AddCardDialog({
             displayEmpty
           >
             <MenuItem value="AG">AG</MenuItem>
+            <MenuItem value="CH">CH</MenuItem>
             <MenuItem value="FD">FD</MenuItem>
             <MenuItem value="BM">BM</MenuItem>
           </Select>
