@@ -70,32 +70,6 @@ const initialState: KanbanState = {
   columnOrder,
 };
 
-// type ApiCard = {
-//   id?: number | string;
-//   ID?: number | string;
-//   Id?: number | string;
-//   Title?: string;
-//   CardCode?: string;
-//   Description?: string;
-//   Value?: number | null;
-//   Owner?: string | null;
-//   Status?: string | null;
-//   CustomerName?: string | null;
-//   CustomerGroup?: string | null;
-//   ActivityEarly?: string | null;
-//   ActivityMid?: string | null;
-//   ActivityLate?: string | null;
-//   Items?: ApiCardItem[];
-// };
-
-// type ApiCardItem = {
-//   item?: string;
-//   quantity?: number;
-//   uom?: string;
-//   pricePerUom?: number;
-//   subtotal?: number;
-// };
-
 export const createTask = createAsyncThunk(
   "kanban/createTask",
   async ({

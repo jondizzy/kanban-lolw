@@ -59,15 +59,12 @@ export default function CardPreview({ task, index, onClick, onDelete }: any) {
                 alignItems: "center",
               }}
             >
-              {/* {task.cardCode && ( */}
               <Typography
                 variant="caption"
                 color="text.secondary"
-                // value={formatRupiah(Number(task.value))}
               >
                 {formatRupiah(Number(task.value))}
               </Typography>
-              {/*  )} */}
 
               <Typography variant="caption" color="text.secondary">
                 {task.owner}

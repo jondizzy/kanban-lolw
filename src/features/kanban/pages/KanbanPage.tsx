@@ -183,13 +183,6 @@ export default function KanbanPage() {
     dispatch(fetchCards());
   }, [dispatch]);
 
-  // const [form, setForm] = useState({
-  //   title: "",
-  //   description: "",
-  //   value: "",
-  //   owner: "",
-  // });
-
   return (
     <>
       <Box
