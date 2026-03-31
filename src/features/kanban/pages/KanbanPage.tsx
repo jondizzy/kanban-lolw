@@ -224,7 +224,7 @@ export default function KanbanPage() {
             <Select
               labelId="role-select-label"
               value={role}
-              label="Division"
+              label="Segment"
               disabled={!isKanbanAdmin}
               onChange={(e) => setRole(e.target.value as Role)}
             >
@@ -239,8 +239,8 @@ export default function KanbanPage() {
       </Box>
 
       <KanbanBoard
+        activeDivision={role}
         search={search}
-        // visibleColumnIds={visibleColumnIds}
         visibleColumnIds={visibleColumnIds}
         onAddCard={(colId) => {
           setActiveColumnId(colId);
@@ -269,6 +269,8 @@ export default function KanbanPage() {
       <AddCardDialog
         open={addOpen}
         columnId={activeColumnId}
+        defaultDepartment={role === "MNG" ? defaultDivisionRole : role}
+        allowDepartmentChange={isKanbanAdmin}
         onClose={() => setAddOpen(false)}
         onCreate={(payload) => {
           dispatch(

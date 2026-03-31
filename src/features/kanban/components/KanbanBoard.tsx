@@ -6,6 +6,7 @@ import KanbanColumn from "./KanbanColumn";
 import type { KanbanProps } from "../../../store/kanbanTypes";
 
 export default function KanbanBoard({
+  activeDivision,
   visibleColumnIds,
   onAddCard,
   onCardClick,
@@ -82,6 +83,14 @@ export default function KanbanBoard({
           const column = columns[columnId];
           const filteredTaskIds = column.taskIds.filter((taskId) => {
             const task = tasks[taskId];
+            const matchesDivision =
+              activeDivision === "MNG" ||
+              task.departmentCode === activeDivision;
+
+            if (!matchesDivision) {
+              return false;
+            }
+
             if (!search) return true;
             //search criteria defined here
             return (

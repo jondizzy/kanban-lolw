@@ -2,7 +2,32 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api/axiosApi";
-import type { Task, KanbanState, ApiCard, ApiCardItem } from "./kanbanTypes";
+import type {
+  Task,
+  KanbanState,
+  ApiCard,
+  ApiCardItem,
+  Role,
+} from "./kanbanTypes";
+import { resolveDivisionFromCardCode } from "../features/kanban/utils/cardDivision";
+
+const normalizeDepartmentCode = (
+  departmentCode?: string | null,
+): Role | undefined => {
+  const normalizedDepartmentCode = departmentCode?.trim().toUpperCase();
+
+  if (
+    normalizedDepartmentCode === "AG" ||
+    normalizedDepartmentCode === "CH" ||
+    normalizedDepartmentCode === "FD" ||
+    normalizedDepartmentCode === "BM" ||
+    normalizedDepartmentCode === "MNG"
+  ) {
+    return normalizedDepartmentCode;
+  }
+
+  return undefined;
+};
 
 const columnOrder: string[] = [
   "new_leads",
@@ -80,7 +105,7 @@ export const createTask = createAsyncThunk(
   }: {
     columnId: string;
     title: string;
-    department: string;
+    department: Role;
     transactionType: string;
   }) => {
     const res = await api.post("cards", {
@@ -89,7 +114,7 @@ export const createTask = createAsyncThunk(
       transaction_type: transactionType,
       status: columnId,
     });
-    return { columnId, task: res.data };
+    return { columnId, department, task: res.data };
   },
 );
 
@@ -137,6 +162,9 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
       title: card.Title ?? "",
       status,
       cardCode: card.CardCode ?? "",
+      departmentCode:
+        normalizeDepartmentCode(card.DepartmentCode ?? null) ??
+        resolveDivisionFromCardCode(card.CardCode ?? ""),
       description: card.Description ?? "",
       value: Number(card.Value ?? 0),
       owner: card.Owner ?? "",
@@ -199,13 +227,17 @@ const kanbanSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(createTask.fulfilled, (state, action) => {
-      const { columnId, task } = action.payload;
+      const { columnId, department, task } = action.payload;
       const id = String(task.id ?? task.ID ?? task.Id);
       state.tasks[id] = {
         id,
         title: task.Title,
         status: columnId,
         cardCode: task.CardCode,
+        departmentCode:
+          normalizeDepartmentCode(task.DepartmentCode ?? null) ??
+          resolveDivisionFromCardCode(task.CardCode ?? "") ??
+          department,
         description: task.Description,
         value: task.Value,
         owner: task.Owner,
@@ -223,6 +255,13 @@ const kanbanSlice = createSlice({
           ...state.tasks[cardId],
           title: saved?.Title ?? state.tasks[cardId].title,
           status: saved?.Status ?? state.tasks[cardId].status,
+          cardCode: saved?.CardCode ?? state.tasks[cardId].cardCode,
+          departmentCode:
+            normalizeDepartmentCode(saved?.DepartmentCode ?? null) ??
+            resolveDivisionFromCardCode(
+              saved?.CardCode ?? state.tasks[cardId].cardCode ?? "",
+            ) ??
+            state.tasks[cardId].departmentCode,
           description: saved?.Description ?? state.tasks[cardId].description,
           value: Number(saved?.Value ?? state.tasks[cardId].value ?? 0),
           owner: saved?.Owner ?? state.tasks[cardId].owner,

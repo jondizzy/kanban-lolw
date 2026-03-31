@@ -243,13 +243,15 @@ export default function CardDetailDialog({
                         fullWidth
                         value={row.item}
                         onChange={(e) => {
-                          const next = form.items.map((row, i) =>
-                            i === index
-                              ? { ...row, item: e.target.value }
-                              : row,
-                          );
-
-                          setForm({ ...form, items: next });
+                          const item = e.target.value;
+                          setForm((prev: CardFormState) => ({
+                            ...prev,
+                            items: prev.items.map((currentRow, i) =>
+                              i === index
+                                ? { ...currentRow, item }
+                                : currentRow,
+                            ),
+                          }));
                         }}
                       />
                     </Grid>
@@ -261,12 +263,19 @@ export default function CardDetailDialog({
                         fullWidth
                         value={row.quantity}
                         onChange={(e) => {
-                          const next = [...form.items];
                           const quantity = parseNumericInput(e.target.value);
-                          next[index].quantity = quantity;
-                          next[index].subtotal =
-                            quantity * next[index].pricePerUom;
-                          setForm({ ...form, items: next });
+                          setForm((prev: CardFormState) => ({
+                            ...prev,
+                            items: prev.items.map((currentRow, i) =>
+                              i === index
+                                ? {
+                                    ...currentRow,
+                                    quantity,
+                                    subtotal: quantity * currentRow.pricePerUom,
+                                  }
+                                : currentRow,
+                            ),
+                          }));
                         }}
                       />
                     </Grid>
@@ -277,9 +286,15 @@ export default function CardDetailDialog({
                         fullWidth
                         value={row.uom}
                         onChange={(e) => {
-                          const next = [...form.items];
-                          next[index].uom = e.target.value;
-                          setForm({ ...form, items: next });
+                          const uom = e.target.value;
+                          setForm((prev: CardFormState) => ({
+                            ...prev,
+                            items: prev.items.map((currentRow, i) =>
+                              i === index
+                                ? { ...currentRow, uom }
+                                : currentRow,
+                            ),
+                          }));
                         }}
                       />
                     </Grid>
@@ -292,14 +307,21 @@ export default function CardDetailDialog({
                         fullWidth
                         value={row.pricePerUom}
                         onChange={(e) => {
-                          const next = [...form.items];
                           const pricePerUom = parseNumericInput(
                             e.target.value,
                           );
-                          next[index].pricePerUom = pricePerUom;
-                          next[index].subtotal =
-                            next[index].quantity * pricePerUom;
-                          setForm({ ...form, items: next });
+                          setForm((prev: CardFormState) => ({
+                            ...prev,
+                            items: prev.items.map((currentRow, i) =>
+                              i === index
+                                ? {
+                                    ...currentRow,
+                                    pricePerUom,
+                                    subtotal: currentRow.quantity * pricePerUom,
+                                  }
+                                : currentRow,
+                            ),
+                          }));
                         }}
                       />
                     </Grid>

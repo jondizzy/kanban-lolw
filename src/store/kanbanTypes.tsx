@@ -14,6 +14,7 @@ export type Task = {
   description?: string;
   status?: string;
   cardCode?: string;
+  departmentCode?: Role;
   customerName?: string;
   customerGroup?: string;
   owner?: string;
@@ -65,6 +66,7 @@ export type Role = "AG" | "CH" | "FD" | "BM" | "MNG";
 
 export type KanbanProps = {
   search: string;
+  activeDivision: Role;
   visibleColumnIds: string[];
   onAddCard: (columnId: string) => void;
   onCardClick: (task: any) => void;
@@ -74,10 +76,12 @@ export type KanbanProps = {
 export type AddCardProps = {
   open: boolean;
   columnId: string;
+  defaultDepartment: Role;
+  allowDepartmentChange?: boolean;
   onClose: () => void;
   onCreate: (payload: {
     title: string;
-    department: string;
+    department: Role;
     transactionType: string;
   }) => void;
 };
@@ -88,6 +92,7 @@ export type ApiCard = {
   Id?: number | string;
   Title?: string;
   CardCode?: string;
+  DepartmentCode?: Role | string | null;
   Description?: string;
   Value?: number | null;
   Owner?: string | null;

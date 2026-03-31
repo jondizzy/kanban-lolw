@@ -16,11 +16,13 @@ import api from "../../../api/axiosApi";
 export default function AddCardDialog({
   open,
   columnId: _columnId,
+  defaultDepartment,
+  allowDepartmentChange = true,
   onClose,
   onCreate,
 }: AddCardProps) {
   const [title, setTitle] = useState("");
-  const [department, setDepartment] = useState("");
+  const [department, setDepartment] = useState(defaultDepartment);
   const [transactionType, setTransactionType] = useState("");
   const [nextNumber, setNextNumber] = useState<string>("");
   const [loadingNumber, setLoadingNumber] = useState(false);
@@ -60,6 +62,14 @@ export default function AddCardDialog({
     };
   }, [open, department, transactionType]);
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    setDepartment(defaultDepartment);
+  }, [defaultDepartment, open]);
+
   const handleAdd = () => {
     if (!title || !department || !transactionType) return;
 
@@ -71,7 +81,7 @@ export default function AddCardDialog({
 
     // reset
     setTitle("");
-    setDepartment("");
+    setDepartment(defaultDepartment);
     setTransactionType("");
     setNextNumber("");
     onClose();
@@ -86,6 +96,7 @@ export default function AddCardDialog({
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
             displayEmpty
+            disabled={!allowDepartmentChange}
           >
             <MenuItem value="AG">AG</MenuItem>
             <MenuItem value="CH">CH</MenuItem>
