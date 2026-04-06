@@ -25,6 +25,7 @@ import type {
 } from "../../../store/kanbanTypes";
 import { roleVisibleColumns } from "../utils/roleColumn";
 
+// Fallback role resolution used before `auth/me` finishes loading.
 const resolveStoredUserRole = () => {
   if (typeof window === "undefined") {
     return "";
@@ -39,6 +40,7 @@ const resolveStoredUserRole = () => {
   );
 };
 
+// Persist session hints so reloads can still choose a sensible default role.
 const persistUserSession = (session: AuthSession) => {
   if (typeof window === "undefined") {
     return;
@@ -68,6 +70,7 @@ const persistUserSession = (session: AuthSession) => {
   }
 };
 
+// Backend role strings are matched loosely because they may include extra text.
 const resolveDivisionFromUserRole = (userRole: string): Role => {
   const normalizedRole = userRole.trim().toUpperCase();
 
@@ -165,7 +168,7 @@ export default function KanbanPage() {
     }
   }, [defaultDivisionRole, isKanbanAdmin, role]);
 
-  //auto count total feature
+  // Keep the dialog total derived from the line items shown on screen.
   useEffect(() => {
     const nextTotal = form.items.reduce((sum, row) => sum + row.subtotal, 0);
 
@@ -178,7 +181,7 @@ export default function KanbanPage() {
     }
   }, [form.items]);
 
-  // Fetch cards from API on mount
+  // Initial board load.
   useEffect(() => {
     dispatch(fetchCards());
   }, [dispatch]);
@@ -248,6 +251,7 @@ export default function KanbanPage() {
         }}
         onCardClick={(task) => {
           setSelectedTaskId(task.id);
+          // Seed the detail dialog from the normalized Redux task shape.
           setForm({
             title: task.title || "",
             description: task.description || "",

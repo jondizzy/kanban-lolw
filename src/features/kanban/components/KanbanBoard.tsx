@@ -33,6 +33,7 @@ export default function KanbanBoard({
       return;
     }
 
+    // Update the UI first so drag/drop feels immediate.
     dispatch(
       moveTask({
         sourceCol: source.droppableId,
@@ -52,6 +53,7 @@ export default function KanbanBoard({
       ).unwrap();
     } catch (err) {
       console.error("Failed to persist card status:", err);
+      // Roll back the local move if the backend update fails.
       dispatch(
         moveTask({
           sourceCol: destination.droppableId,
@@ -83,6 +85,7 @@ export default function KanbanBoard({
           const column = columns[columnId];
           const filteredTaskIds = column.taskIds.filter((taskId) => {
             const task = tasks[taskId];
+            // Managers can view every division; others only see matching cards.
             const matchesDivision =
               activeDivision === "MNG" ||
               task.departmentCode === activeDivision;
@@ -92,7 +95,7 @@ export default function KanbanBoard({
             }
 
             if (!search) return true;
-            //search criteria defined here
+            // Search focuses on the fields users most often recognize quickly.
             return (
               task.title?.toLowerCase().includes(normalizedSearch) ||
               task.cardCode?.toLowerCase().includes(normalizedSearch) ||

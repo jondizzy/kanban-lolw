@@ -11,6 +11,7 @@ import type {
 } from "./kanbanTypes";
 import { resolveDivisionFromCardCode } from "../features/kanban/utils/cardDivision";
 
+// API data is normalized before the UI uses it for role-based filtering.
 const normalizeDepartmentCode = (
   departmentCode?: string | null,
 ): Role | undefined => {
@@ -89,6 +90,8 @@ const createEmptyColumns = (): KanbanState["columns"] => ({
   },
 });
 
+// State is stored in normalized form:
+// `tasks` keeps the records, while each column only keeps ordered task ids.
 const initialState: KanbanState = {
   tasks: {},
   columns: createEmptyColumns(),
@@ -149,6 +152,7 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
   const columns = createEmptyColumns();
 
   (res.data as ApiCard[]).forEach((card, index) => {
+    // Accept multiple id key formats and avoid duplicate keys in the local map.
     const rawId = card.id ?? card.ID ?? card.Id;
     let id = String(rawId ?? `fallback-${index}`);
     if (tasks[id]) {
@@ -183,6 +187,7 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
       total: Number(card.Value ?? 0),
     };
 
+    // Columns only track ordering; the card payload lives in `tasks`.
     columns[status].taskIds.push(id);
   });
 
@@ -193,7 +198,7 @@ const kanbanSlice = createSlice({
   name: "kanban",
   initialState,
   reducers: {
-    //move
+    // Local move used for optimistic drag/drop updates.
     moveTask: (
       state,
       action: PayloadAction<{
@@ -210,7 +215,7 @@ const kanbanSlice = createSlice({
       state.columns[destCol].taskIds.splice(destIndex, 0, taskId);
     },
 
-    //update
+    // Local patch helper for UI-only updates without a refetch.
     updateTask(
       state,
       action: PayloadAction<{
@@ -251,6 +256,7 @@ const kanbanSlice = createSlice({
       const saved = task?.card;
       const savedItems = Array.isArray(task?.items) ? task.items : undefined;
       if (state.tasks[cardId]) {
+        // Preserve the previous values when the backend responds partially.
         state.tasks[cardId] = {
           ...state.tasks[cardId],
           title: saved?.Title ?? state.tasks[cardId].title,
@@ -312,6 +318,7 @@ const kanbanSlice = createSlice({
 
     builder.addCase(fetchCards.fulfilled, (state, action) => {
       const { tasks, columns, columnOrder } = action.payload;
+      // Replace the board snapshot atomically with the latest server state.
       state.tasks = tasks;
       state.columns = columns;
       state.columnOrder = columnOrder;

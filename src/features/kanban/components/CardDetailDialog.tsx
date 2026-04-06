@@ -23,6 +23,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import type { CardFormState, CardFormRedux } from "../../../store/kanbanTypes";
 import formatRupiah from "../utils/currencyFormatter";
 
+// Avoid NaN when a numeric field is temporarily cleared during editing.
 const parseNumericInput = (value: string) => {
   if (value.trim() === "") {
     return 0;
@@ -270,6 +271,7 @@ export default function CardDetailDialog({
                               i === index
                                 ? {
                                     ...currentRow,
+                                    // Keep subtotal derived from qty x unit price.
                                     quantity,
                                     subtotal: quantity * currentRow.pricePerUom,
                                   }

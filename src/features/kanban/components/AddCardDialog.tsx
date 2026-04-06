@@ -36,6 +36,7 @@ export default function AddCardDialog({
         return;
       }
 
+      // Preview the next running number for the selected card pattern.
       setLoadingNumber(true);
       try {
         const res = await api.get("cards/next-number", {
@@ -79,7 +80,7 @@ export default function AddCardDialog({
       transactionType,
     });
 
-    // reset
+    // Reset local dialog state after handing the payload to the page.
     setTitle("");
     setDepartment(defaultDepartment);
     setTransactionType("");

@@ -1,4 +1,6 @@
 import type { Role } from "../../../store/kanbanTypes";
+
+// Visible columns per division. `MNG` acts as the full-board view.
 export const roleVisibleColumns: Record<Role, string[]> = {
   AG: ["new_leads", "ag_qualify", "ag_interest", "ag_hot", "won", "lost"],
   CH: ["new_leads", "ag_qualify", "ag_interest", "ag_hot", "won", "lost"],

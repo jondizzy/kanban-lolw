@@ -1,4 +1,4 @@
-//sets of variables grouped as a single entity
+// Shared domain types used across Redux, dialogs, and API mapping.
 
 export type LineItem = {
   item: string;
@@ -12,7 +12,7 @@ export type Task = {
   id: string;
   title: string;
   description?: string;
-  status?: string;
+  status?: string; // matches the column id used by the board and backend
   cardCode?: string;
   departmentCode?: Role;
   customerName?: string;
@@ -33,13 +33,13 @@ export type CardFormState = {
   customerName?: string;
   customerGroup?: string;
   owner?: string;
-  value?: number; //deal value
+  value?: number; // deal value shown on the card
   activityEarly?: string;
   activityMid?: string;
   activityLate?: string;
 
   items: LineItem[];
-  total: number; //sum(subtotal)
+  total: number; // sum of all line-item subtotals
 };
 
 export type CardFormRedux = {
@@ -87,6 +87,7 @@ export type AddCardProps = {
 };
 
 export type ApiCard = {
+  // Backend payloads may not use one consistent casing for every field.
   id?: number | string;
   ID?: number | string;
   Id?: number | string;
