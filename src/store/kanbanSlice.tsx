@@ -6,12 +6,12 @@ import type {
   Task,
   KanbanState,
   ApiCard,
+  ApiCardFile,
   ApiCardItem,
   Role,
 } from "./kanbanTypes";
 import { resolveDivisionFromCardCode } from "../features/kanban/utils/cardDivision";
 
-// API data is normalized before the UI uses it for role-based filtering.
 const normalizeDepartmentCode = (
   departmentCode?: string | null,
 ): Role | undefined => {
@@ -90,8 +90,6 @@ const createEmptyColumns = (): KanbanState["columns"] => ({
   },
 });
 
-// State is stored in normalized form:
-// `tasks` keeps the records, while each column only keeps ordered task ids.
 const initialState: KanbanState = {
   tasks: {},
   columns: createEmptyColumns(),
@@ -152,7 +150,6 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
   const columns = createEmptyColumns();
 
   (res.data as ApiCard[]).forEach((card, index) => {
-    // Accept multiple id key formats and avoid duplicate keys in the local map.
     const rawId = card.id ?? card.ID ?? card.Id;
     let id = String(rawId ?? `fallback-${index}`);
     if (tasks[id]) {
@@ -173,6 +170,8 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
       value: Number(card.Value ?? 0),
       owner: card.Owner ?? "",
       customerName: card.CustomerName ?? "",
+      customerPic: card.CustomerPic ?? "",
+      phoneNumber: card.PhoneNumber ?? "",
       customerGroup: card.CustomerGroup ?? "",
       activityEarly: card.ActivityEarly ?? "",
       activityMid: card.ActivityMid ?? "",
@@ -184,21 +183,56 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
         pricePerUom: Number(it.pricePerUom ?? 0),
         subtotal: Number(it.subtotal ?? 0),
       })),
+      files: (card.Files ?? []).map((file: ApiCardFile) => ({
+        id: String(file.id ?? ""),
+        name: file.fileName ?? file.name ?? "",
+        url: file.url ?? "",
+      })),
       total: Number(card.Value ?? 0),
     };
 
-    // Columns only track ordering; the card payload lives in `tasks`.
     columns[status].taskIds.push(id);
   });
 
   return { tasks, columns, columnOrder };
 });
 
+export const uploadFile = createAsyncThunk(
+  "kanban/uploadFile",
+  async ({ taskId, file }: { taskId: string; file: File }) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await api.post(`cards/${taskId}/files`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    const uploadedFile = Array.isArray(res.data?.files) ? res.data.files[0] : null;
+
+    return {
+      taskId,
+      file: uploadedFile,
+    };
+  },
+);
+
+export const deleteFile = createAsyncThunk(
+  "kanban/deleteFile",
+  async ({ taskId, fileId }: { taskId: string; fileId: string }) => {
+    await api.delete(`cards/${taskId}/files/${fileId}`);
+    return {
+      taskId,
+      fileId,
+    };
+  },
+);
+
 const kanbanSlice = createSlice({
   name: "kanban",
   initialState,
   reducers: {
-    // Local move used for optimistic drag/drop updates.
     moveTask: (
       state,
       action: PayloadAction<{
@@ -215,7 +249,6 @@ const kanbanSlice = createSlice({
       state.columns[destCol].taskIds.splice(destIndex, 0, taskId);
     },
 
-    // Local patch helper for UI-only updates without a refetch.
     updateTask(
       state,
       action: PayloadAction<{
@@ -246,17 +279,24 @@ const kanbanSlice = createSlice({
         description: task.Description,
         value: task.Value,
         owner: task.Owner,
+        customerName: task.CustomerName ?? "",
+        customerPic: task.CustomerPic ?? "",
+        phoneNumber: task.PhoneNumber ?? "",
+        customerGroup: task.CustomerGroup ?? "",
+        activityEarly: task.ActivityEarly ?? "",
+        activityMid: task.ActivityMid ?? "",
+        activityLate: task.ActivityLate ?? "",
         items: [],
         total: 0,
       };
       state.columns[columnId].taskIds.push(id);
     });
+
     builder.addCase(saveCardData.fulfilled, (state, action) => {
       const { cardId, task } = action.payload;
       const saved = task?.card;
       const savedItems = Array.isArray(task?.items) ? task.items : undefined;
       if (state.tasks[cardId]) {
-        // Preserve the previous values when the backend responds partially.
         state.tasks[cardId] = {
           ...state.tasks[cardId],
           title: saved?.Title ?? state.tasks[cardId].title,
@@ -273,6 +313,10 @@ const kanbanSlice = createSlice({
           owner: saved?.Owner ?? state.tasks[cardId].owner,
           customerName:
             saved?.CustomerName ?? state.tasks[cardId].customerName ?? "",
+          customerPic:
+            saved?.CustomerPic ?? state.tasks[cardId].customerPic ?? "",
+          phoneNumber:
+            saved?.PhoneNumber ?? state.tasks[cardId].phoneNumber ?? "",
           customerGroup:
             saved?.CustomerGroup ?? state.tasks[cardId].customerGroup ?? "",
           activityEarly:
@@ -292,12 +336,14 @@ const kanbanSlice = createSlice({
         };
       }
     });
+
     builder.addCase(updateCardStatus.fulfilled, (state, action) => {
       const { cardId, status } = action.payload;
       if (state.tasks[cardId]) {
         state.tasks[cardId].status = status;
       }
     });
+
     builder.addCase(deleteTask.fulfilled, (state, action) => {
       const { cardId } = action.payload;
       const task = state.tasks[cardId];
@@ -318,10 +364,33 @@ const kanbanSlice = createSlice({
 
     builder.addCase(fetchCards.fulfilled, (state, action) => {
       const { tasks, columns, columnOrder } = action.payload;
-      // Replace the board snapshot atomically with the latest server state.
       state.tasks = tasks;
       state.columns = columns;
       state.columnOrder = columnOrder;
+    });
+
+    builder.addCase(uploadFile.fulfilled, (state, action) => {
+      const { taskId, file } = action.payload;
+
+      if (!state.tasks[taskId] || !file) return;
+
+      if (!state.tasks[taskId].files) {
+        state.tasks[taskId].files = [];
+      }
+
+      state.tasks[taskId].files!.push({
+        id: String(file.id),
+        name: file.fileName ?? file.name ?? "",
+        url: file.url ?? "",
+      });
+    });
+
+    builder.addCase(deleteFile.fulfilled, (state, action) => {
+      const { taskId, fileId } = action.payload;
+      if (!state.tasks[taskId]?.files) return;
+      state.tasks[taskId].files = state.tasks[taskId].files.filter(
+        (file) => file.id !== fileId,
+      );
     });
   },
 });

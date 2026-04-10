@@ -8,6 +8,12 @@ export type LineItem = {
   subtotal: number; //PPU * QTY
 };
 
+export type FileItem = {
+  id: string;
+  name: string;
+  url: string;
+};
+
 export type Task = {
   id: string;
   title: string;
@@ -16,6 +22,8 @@ export type Task = {
   cardCode?: string;
   departmentCode?: Role;
   customerName?: string;
+  customerPic?: string;
+  phoneNumber?: string;
   customerGroup?: string;
   owner?: string;
   value?: number;
@@ -24,6 +32,7 @@ export type Task = {
   activityEarly?: string;
   activityMid?: string;
   activityLate?: string;
+  files?: FileItem[];
 };
 
 export type CardFormState = {
@@ -31,6 +40,8 @@ export type CardFormState = {
   description?: string;
   cardCode?: string;
   customerName?: string;
+  customerPic?: string;
+  phoneNumber?: string;
   customerGroup?: string;
   owner?: string;
   value?: number; // deal value shown on the card
@@ -99,11 +110,23 @@ export type ApiCard = {
   Owner?: string | null;
   Status?: string | null;
   CustomerName?: string | null;
+  CustomerPic?: string | null;
+  PhoneNumber?: string | null;
   CustomerGroup?: string | null;
   ActivityEarly?: string | null;
   ActivityMid?: string | null;
   ActivityLate?: string | null;
   Items?: ApiCardItem[];
+  Files?: ApiCardFile[];
+};
+
+export type ApiCardFile = {
+  id?: number | string;
+  name?: string;
+  fileName?: string;
+  url?: string;
+  mimeType?: string | null;
+  fileSizeBytes?: number;
 };
 
 export type ApiCardItem = {
@@ -125,4 +148,11 @@ export type AuthSession = {
   userRole?: string | null;
   Role?: string | null;
   isLoggedIn?: boolean;
+};
+
+export type CardPreviewProps = {
+  task: Task;
+  index: number;
+  onClick: (task: Task) => void;
+  onDelete: (taskId: string) => void;
 };

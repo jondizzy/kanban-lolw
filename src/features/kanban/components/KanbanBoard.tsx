@@ -100,7 +100,10 @@ export default function KanbanBoard({
               task.title?.toLowerCase().includes(normalizedSearch) ||
               task.cardCode?.toLowerCase().includes(normalizedSearch) ||
               task.customerName?.toLowerCase().includes(normalizedSearch) ||
-              task.owner?.toLowerCase().includes(normalizedSearch)
+              task.owner?.toLowerCase().includes(normalizedSearch) ||
+              task.items?.some((item) =>
+                item.item.toLowerCase().includes(normalizedSearch),
+              )
             );
           });
           return (

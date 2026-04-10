@@ -121,6 +121,26 @@ export default function CardDetailDialog({
               </Grid>
               <Grid size={6}>
                 <TextField
+                  label="Customer PIC"
+                  fullWidth
+                  value={form.customerPic || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, customerPic: e.target.value })
+                  }
+                />
+              </Grid>
+              <Grid size={6}>
+                <TextField
+                  label="Phone Number"
+                  fullWidth
+                  value={form.phoneNumber || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, phoneNumber: e.target.value })
+                  }
+                />
+              </Grid>
+              <Grid size={6}>
+                <TextField
                   label="Deal Value (IDR)"
                   disabled
                   fullWidth
@@ -292,9 +312,7 @@ export default function CardDetailDialog({
                           setForm((prev: CardFormState) => ({
                             ...prev,
                             items: prev.items.map((currentRow, i) =>
-                              i === index
-                                ? { ...currentRow, uom }
-                                : currentRow,
+                              i === index ? { ...currentRow, uom } : currentRow,
                             ),
                           }));
                         }}
@@ -309,9 +327,7 @@ export default function CardDetailDialog({
                         fullWidth
                         value={row.pricePerUom}
                         onChange={(e) => {
-                          const pricePerUom = parseNumericInput(
-                            e.target.value,
-                          );
+                          const pricePerUom = parseNumericInput(e.target.value);
                           setForm((prev: CardFormState) => ({
                             ...prev,
                             items: prev.items.map((currentRow, i) =>
