@@ -11,6 +11,7 @@ import type {
   Role,
 } from "./kanbanTypes";
 import { resolveDivisionFromCardCode } from "../features/kanban/utils/cardDivision";
+import { normalizeCustomerGroup } from "../features/kanban/utils/customerGroup";
 
 const normalizeDepartmentCode = (
   departmentCode?: string | null,
@@ -172,7 +173,7 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
       customerName: card.CustomerName ?? "",
       customerPic: card.CustomerPic ?? "",
       phoneNumber: card.PhoneNumber ?? "",
-      customerGroup: card.CustomerGroup ?? "",
+      customerGroup: normalizeCustomerGroup(card.CustomerGroup),
       activityEarly: card.ActivityEarly ?? "",
       activityMid: card.ActivityMid ?? "",
       activityLate: card.ActivityLate ?? "",
@@ -282,7 +283,7 @@ const kanbanSlice = createSlice({
         customerName: task.CustomerName ?? "",
         customerPic: task.CustomerPic ?? "",
         phoneNumber: task.PhoneNumber ?? "",
-        customerGroup: task.CustomerGroup ?? "",
+        customerGroup: normalizeCustomerGroup(task.CustomerGroup),
         activityEarly: task.ActivityEarly ?? "",
         activityMid: task.ActivityMid ?? "",
         activityLate: task.ActivityLate ?? "",
@@ -318,7 +319,9 @@ const kanbanSlice = createSlice({
           phoneNumber:
             saved?.PhoneNumber ?? state.tasks[cardId].phoneNumber ?? "",
           customerGroup:
-            saved?.CustomerGroup ?? state.tasks[cardId].customerGroup ?? "",
+            normalizeCustomerGroup(
+              saved?.CustomerGroup ?? state.tasks[cardId].customerGroup,
+            ) ?? "",
           activityEarly:
             saved?.ActivityEarly ?? state.tasks[cardId].activityEarly ?? "",
           activityMid:

@@ -24,6 +24,7 @@ import type {
   Role,
 } from "../../../store/kanbanTypes";
 import { roleVisibleColumns } from "../utils/roleColumn";
+import { normalizeCustomerGroup } from "../utils/customerGroup";
 
 // Fallback role resolution used before `auth/me` finishes loading.
 const resolveStoredUserRole = () => {
@@ -261,7 +262,7 @@ export default function KanbanPage() {
             customerName: task.customerName || "",
             customerPic: task.customerPic || "",
             phoneNumber: task.phoneNumber || "",
-            customerGroup: task.customerGroup || "",
+            customerGroup: normalizeCustomerGroup(task.customerGroup),
             activityEarly: task.activityEarly || "",
             activityMid: task.activityMid || "",
             activityLate: task.activityLate || "",
@@ -310,7 +311,7 @@ export default function KanbanPage() {
                   customerName: form.customerName || "",
                   customerPic: form.customerPic || "",
                   phoneNumber: form.phoneNumber || "",
-                  customerGroup: form.customerGroup || "",
+                  customerGroup: normalizeCustomerGroup(form.customerGroup),
                   items: form.items,
                   total: form.total || 0,
                   activityEarly: form.activityEarly || "",

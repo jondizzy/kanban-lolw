@@ -1,9 +1,10 @@
 //IDR Currency Formatter
 export default function formatRupiah(value?: number) {
-  if (!value) return "";
+  if (value === undefined || value === null || Number.isNaN(value)) return "";
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(value);
 }

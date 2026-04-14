@@ -22,6 +22,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import InputAdornment from "@mui/material/InputAdornment";
 import type { CardFormState, CardFormRedux } from "../../../store/kanbanTypes";
 import formatRupiah from "../utils/currencyFormatter";
+import { normalizeCustomerGroup } from "../utils/customerGroup";
 
 // Avoid NaN when a numeric field is temporarily cleared during editing.
 const parseNumericInput = (value: string) => {
@@ -108,9 +109,14 @@ export default function CardDetailDialog({
               <Grid size={2}>
                 <Select
                   fullWidth
-                  value={form.customerGroup || ""}
+                  value={normalizeCustomerGroup(form.customerGroup)}
                   onChange={(e) =>
-                    setForm({ ...form, customerGroup: e.target.value })
+                    setForm({
+                      ...form,
+                      customerGroup: normalizeCustomerGroup(
+                        String(e.target.value),
+                      ),
+                    })
                   }
                   displayEmpty
                 >
@@ -145,6 +151,11 @@ export default function CardDetailDialog({
                   disabled
                   fullWidth
                   value={formatRupiah(Number(form.total))}
+                  slotProps={{
+                    htmlInput: {
+                      step: "0.01",
+                    },
+                  }}
                   onChange={(e) => {
                     const raw = e.target.value.replace(/[^\d]/g, "");
                     setForm({ ...form, value: Number(raw) });
@@ -282,6 +293,11 @@ export default function CardDetailDialog({
                         size="small"
                         type="number"
                         fullWidth
+                        slotProps={{
+                          htmlInput: {
+                            step: "0.01",
+                          },
+                        }}
                         value={row.quantity}
                         onChange={(e) => {
                           const quantity = parseNumericInput(e.target.value);
@@ -325,6 +341,11 @@ export default function CardDetailDialog({
                         size="small"
                         type="number"
                         fullWidth
+                        slotProps={{
+                          htmlInput: {
+                            step: "0.01",
+                          },
+                        }}
                         value={row.pricePerUom}
                         onChange={(e) => {
                           const pricePerUom = parseNumericInput(e.target.value);
