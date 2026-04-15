@@ -268,7 +268,7 @@ export default function CardDetailDialog({
                         </IconButton>
                       </Tooltip>
                     </Grid>
-                    <Grid size={7}>
+                    <Grid size={6}>
                       <TextField
                         label="Item"
                         size="small"
@@ -285,9 +285,9 @@ export default function CardDetailDialog({
                             ),
                           }));
                         }}
-                      />
+                      />  
                     </Grid>
-                    <Grid size={2}>
+                    <Grid size={3}>
                       <TextField
                         label="Qty"
                         size="small"

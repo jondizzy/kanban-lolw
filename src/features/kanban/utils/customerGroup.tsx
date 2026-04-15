@@ -1,4 +1,8 @@
-export const normalizeCustomerGroup = (value?: string | null) => {
+export type CustomerGroupValue = "" | "internal" | "eksternal";
+
+export const normalizeCustomerGroup = (
+  value?: string | null,
+): CustomerGroupValue => {
   const normalized = value?.trim().toLowerCase();
 
   if (!normalized) {
@@ -17,5 +21,5 @@ export const normalizeCustomerGroup = (value?: string | null) => {
     return "eksternal";
   }
 
-  return value?.trim() ?? "";
+  return "";
 };

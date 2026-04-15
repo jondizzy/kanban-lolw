@@ -50,7 +50,10 @@ export default function CardPreview({
         text: `${file.name} uploaded successfully.`,
       });
     } catch (error) {
-      console.error(`Failed to upload file ${file.name} for task ${taskId}`, error);
+      console.error(
+        `Failed to upload file ${file.name} for task ${taskId}`,
+        error,
+      );
       setUploadStatus({
         type: "error",
         text: `Failed to upload ${file.name}.`,
@@ -72,7 +75,10 @@ export default function CardPreview({
         text: `${fileName} deleted successfully.`,
       });
     } catch (error) {
-      console.error(`Failed to delete file ${fileName} for task ${task.id}`, error);
+      console.error(
+        `Failed to delete file ${fileName} for task ${task.id}`,
+        error,
+      );
       setUploadStatus({
         type: "error",
         text: `Failed to delete ${fileName}.`,
@@ -107,14 +113,20 @@ export default function CardPreview({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                gap: 1,
               }}
             >
-              <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+              <Typography
+                variant="body2"
+                fontWeight={500}
+                sx={{ mb: 0.5, minWidth: 0, flex: 1, overflowWrap: "anywhere" }}
+              >
                 {task.cardCode} — {task.title}
               </Typography>
               <IconButton
                 size="small"
                 sx={{
+                  flexShrink: 0,
                   color: "error",
                   opacity: 0.7,
                   "&:hover": { opacity: 1 },
@@ -144,6 +156,9 @@ export default function CardPreview({
                 {task.owner}
               </Typography>
             </Box>
+            <Typography variant="caption" color="text.secondary">
+              {task.customerName}
+            </Typography>
             <Box sx={{ m: 1 }}></Box>
             <Accordion
               elevation={0}
@@ -248,6 +263,9 @@ export default function CardPreview({
                     onChange={(e) => void handleFileUpload(e, task.id)}
                   />
                 </Button>
+                <Typography variant="caption" color="#da0a0a">
+                  *max upload size: 40MB **max total upload: 20 files per card
+                </Typography>
               </AccordionDetails>
             </Accordion>
           </CardContent>

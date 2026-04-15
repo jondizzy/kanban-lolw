@@ -17,7 +17,14 @@ export default function KanbanColumn({
   }, 0);
 
   return (
-    <div style={{ width: 420, minWidth: 360, marginRight: 10 }}>
+    <div
+      style={{
+        width: 420,
+        minWidth: 360,
+        flex: "0 0 420px",
+        marginRight: 10,
+      }}
+    >
       {/* HEADER OUTSIDE PAPER */}
       <Box
         sx={{
@@ -92,7 +99,9 @@ export default function KanbanColumn({
               display: "flex",
               gap: 1.5,
               flexDirection: "column",
-              maxHeight: "calc(100vh - 160px)",
+              // maxHeight: "calc(100vh - 160px)",
+              overflowY: "auto",
+              overflowX: "hidden",
             }}
           >
             <Button
