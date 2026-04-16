@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -41,6 +42,25 @@ export default function CardDetailDialog({
   onClose,
   onSave,
 }: CardFormRedux) {
+  const [ownerError, setOwnerError] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setOwnerError(false);
+    }
+  }, [open]);
+
+  const handleSave = () => {
+    if (!form.owner?.trim()) {
+      setOwnerError(true);
+      window.alert("Sales Responsible is required before saving.");
+      return;
+    }
+
+    setOwnerError(false);
+    onSave();
+  };
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle
@@ -75,7 +95,7 @@ export default function CardDetailDialog({
 
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button onClick={onClose}>Cancel</Button>
-          <Button variant="contained" onClick={onSave}>
+          <Button variant="contained" onClick={handleSave}>
             Save
           </Button>
         </Box>
@@ -166,9 +186,21 @@ export default function CardDetailDialog({
               <Grid size={6}>
                 <TextField
                   label="Sales Responsible"
+                  required
                   fullWidth
                   value={form.owner || ""}
-                  onChange={(e) => setForm({ ...form, owner: e.target.value })}
+                  error={ownerError}
+                  helperText={
+                    ownerError ? "Sales Responsible is required." : " "
+                  }
+                  onChange={(e) => {
+                    const nextOwner = e.target.value;
+                    setForm({ ...form, owner: nextOwner });
+
+                    if (ownerError && nextOwner.trim()) {
+                      setOwnerError(false);
+                    }
+                  }}
                 />
               </Grid>
             </Grid>
@@ -285,7 +317,7 @@ export default function CardDetailDialog({
                             ),
                           }));
                         }}
-                      />  
+                      />
                     </Grid>
                     <Grid size={3}>
                       <TextField
