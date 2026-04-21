@@ -12,6 +12,7 @@ import type {
 } from "./kanbanTypes";
 import { resolveDivisionFromCardCode } from "../features/kanban/utils/cardDivision";
 import { normalizeCustomerGroup } from "../features/kanban/utils/customerGroup";
+import { normalizeMeetings } from "../features/kanban/utils/meetingNotes";
 
 const normalizeDepartmentCode = (
   departmentCode?: string | null,
@@ -162,6 +163,7 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
     tasks[id] = {
       id,
       title: card.Title ?? "",
+      createdAt: card.CreatedAt ?? "",
       status,
       cardCode: card.CardCode ?? "",
       departmentCode:
@@ -177,11 +179,13 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
       activityEarly: card.ActivityEarly ?? "",
       activityMid: card.ActivityMid ?? "",
       activityLate: card.ActivityLate ?? "",
+      meetings: normalizeMeetings(card.Meetings, card.ActivityEarly),
       items: (card.Items ?? []).map((it) => ({
         item: it.item ?? "",
         quantity: Number(it.quantity ?? 0),
         uom: it.uom ?? "",
         pricePerUom: Number(it.pricePerUom ?? 0),
+        margin: Number(it.margin ?? 0),
         subtotal: Number(it.subtotal ?? 0),
       })),
       files: (card.Files ?? []).map((file: ApiCardFile) => ({
@@ -271,6 +275,7 @@ const kanbanSlice = createSlice({
       state.tasks[id] = {
         id,
         title: task.Title,
+        createdAt: task.CreatedAt ?? "",
         status: columnId,
         cardCode: task.CardCode,
         departmentCode:
@@ -287,6 +292,7 @@ const kanbanSlice = createSlice({
         activityEarly: task.ActivityEarly ?? "",
         activityMid: task.ActivityMid ?? "",
         activityLate: task.ActivityLate ?? "",
+        meetings: normalizeMeetings(task.Meetings, task.ActivityEarly),
         items: [],
         total: 0,
       };
@@ -301,6 +307,7 @@ const kanbanSlice = createSlice({
         state.tasks[cardId] = {
           ...state.tasks[cardId],
           title: saved?.Title ?? state.tasks[cardId].title,
+          createdAt: saved?.CreatedAt ?? state.tasks[cardId].createdAt,
           status: saved?.Status ?? state.tasks[cardId].status,
           cardCode: saved?.CardCode ?? state.tasks[cardId].cardCode,
           departmentCode:
@@ -328,12 +335,17 @@ const kanbanSlice = createSlice({
             saved?.ActivityMid ?? state.tasks[cardId].activityMid ?? "",
           activityLate:
             saved?.ActivityLate ?? state.tasks[cardId].activityLate ?? "",
+          meetings: normalizeMeetings(
+            saved?.Meetings,
+            saved?.ActivityEarly ?? state.tasks[cardId].activityEarly,
+          ),
           items:
             savedItems?.map((it: ApiCardItem) => ({
               item: it.item ?? "",
               quantity: Number(it.quantity ?? 0),
               uom: it.uom ?? "",
               pricePerUom: Number(it.pricePerUom ?? 0),
+              margin: Number(it.margin ?? 0),
               subtotal: Number(it.subtotal ?? 0),
             })) ?? state.tasks[cardId].items,
         };

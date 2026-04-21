@@ -18,6 +18,12 @@ import { useAppDispatch } from "../../../store/hooks";
 import { deleteFile, uploadFile } from "../../../store/kanbanSlice";
 import type { CardPreviewProps } from "../../../store/kanbanTypes";
 
+const createdAtFormatter = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
 export default function CardPreview({
   task,
   index,
@@ -32,6 +38,9 @@ export default function CardPreview({
     text: string;
   } | null>(null);
   const [deletingFileId, setDeletingFileId] = useState("");
+  const formattedCreatedAt = task.createdAt
+    ? createdAtFormatter.format(new Date(task.createdAt))
+    : "";
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -123,29 +132,39 @@ export default function CardPreview({
               >
                 {task.cardCode} — {task.title}
               </Typography>
-              <IconButton
-                size="small"
+              <Box
                 sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
                   flexShrink: 0,
-                  color: "error",
-                  opacity: 0.7,
-                  "&:hover": { opacity: 1 },
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm("Delete this card?")) {
-                    onDelete(task.id);
-                  }
+                  minWidth: 40,
                 }}
               >
-                <DeleteOutlineIcon fontSize="small" />
-              </IconButton>
+                <IconButton
+                  size="small"
+                  sx={{
+                    color: "error",
+                    opacity: 0.7,
+                    "&:hover": { opacity: 1 },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm("Delete this card?")) {
+                      onDelete(task.id);
+                    }
+                  }}
+                >
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </Box>
             </Box>
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                gap: 1,
               }}
             >
               <Typography variant="caption" color="text.secondary">
@@ -153,12 +172,24 @@ export default function CardPreview({
               </Typography>
 
               <Typography variant="caption" color="text.secondary">
+                {formattedCreatedAt}
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Typography variant="caption" color="text.secondary">
+                {task.customerName}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
                 {task.owner}
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary">
-              {task.customerName}
-            </Typography>
             <Box sx={{ m: 1 }}></Box>
             <Accordion
               elevation={0}

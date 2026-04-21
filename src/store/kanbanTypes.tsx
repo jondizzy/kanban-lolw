@@ -5,6 +5,7 @@ export type LineItem = {
   quantity: number;
   uom: string;
   pricePerUom: number;
+  margin?: number;
   subtotal: number; //PPU * QTY
 };
 
@@ -14,9 +15,17 @@ export type FileItem = {
   url: string;
 };
 
+export type MeetingNote = {
+  title: string;
+  location: string;
+  startedAt: string;
+  notes: string;
+};
+
 export type Task = {
   id: string;
   title: string;
+  createdAt?: string;
   description?: string;
   status?: string; // matches the column id used by the board and backend
   cardCode?: string;
@@ -32,6 +41,7 @@ export type Task = {
   activityEarly?: string;
   activityMid?: string;
   activityLate?: string;
+  meetings?: MeetingNote[];
   files?: FileItem[];
 };
 
@@ -48,6 +58,7 @@ export type CardFormState = {
   activityEarly?: string;
   activityMid?: string;
   activityLate?: string;
+  meetings: MeetingNote[];
 
   items: LineItem[];
   total: number; // sum of all line-item subtotals
@@ -103,6 +114,7 @@ export type ApiCard = {
   ID?: number | string;
   Id?: number | string;
   Title?: string;
+  CreatedAt?: string | null;
   CardCode?: string;
   DepartmentCode?: Role | string | null;
   Description?: string;
@@ -116,8 +128,18 @@ export type ApiCard = {
   ActivityEarly?: string | null;
   ActivityMid?: string | null;
   ActivityLate?: string | null;
+  Meetings?: ApiCardMeeting[];
   Items?: ApiCardItem[];
   Files?: ApiCardFile[];
+};
+
+export type ApiCardMeeting = {
+  id?: number | string;
+  title?: string | null;
+  location?: string | null;
+  startedAt?: string | null;
+  notes?: string | null;
+  sortOrder?: number | null;
 };
 
 export type ApiCardFile = {
@@ -134,6 +156,7 @@ export type ApiCardItem = {
   quantity?: number;
   uom?: string;
   pricePerUom?: number;
+  margin?: number;
   subtotal?: number;
 };
 

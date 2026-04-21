@@ -15,16 +15,64 @@ import {
   IconButton,
   Select,
   MenuItem,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import Addicon from "@mui/icons-material/Add";
 import InputAdornment from "@mui/material/InputAdornment";
-import type { CardFormState, CardFormRedux } from "../../../store/kanbanTypes";
+import type {
+  CardFormState,
+  CardFormRedux,
+  MeetingNote,
+} from "../../../store/kanbanTypes";
 import formatRupiah from "../utils/currencyFormatter";
 import { normalizeCustomerGroup } from "../utils/customerGroup";
+// import { current } from "@reduxjs/toolkit";
+import {
+  buildActivityEarlySummary,
+  createMeetingNote,
+  normalizeMeetings,
+} from "../utils/meetingNotes";
 
+// const DEFAULT_MEETING_TITLE = "Meeting 1";
+// const createMeetingNote = (overrides?: Partial<MeetingNote>): MeetingNote => ({
+//   title: DEFAULT_MEETING_TITLE,
+//   location: "",
+//   startedAt: "",
+//   notes: "",
+//   ...overrides,
+// });
+
+// const parseMeetingNotes = (value?: string): MeetingNote[] => {
+//   if (!value?.trim()) {
+//     return [createMeetingNote()];
+//   }
+
+//   try {
+//     const parsed = JSON.parse(value) as {
+//       meetings?: Array<Partial<MeetingNote>>;
+//     };
+
+//     if (Array.isArray(parsed.meetings) && parsed.meetings.length > 0) {
+//       return parsed.meetings.map((meeting, index) =>
+//         createMeetingNote({
+//           title: meeting.title?.trim() || `Meeting ${index + 1}`,
+//           location: meeting.location ?? "",
+//           startedAt: meeting.startedAt ?? "",
+//           notes: meeting.notes ?? "",
+//         }),
+//       );
+//     }
+//   } catch {}
+//   return [createMeetingNote({ notes: value })];
+// };
+
+// const serializeMeetingNotes = (meetings: MeetingNote[]) =>
+//   JSON.stringify({ meetings });
 // Avoid NaN when a numeric field is temporarily cleared during editing.
 const parseNumericInput = (value: string) => {
   if (value.trim() === "") {
@@ -43,12 +91,35 @@ export default function CardDetailDialog({
   onSave,
 }: CardFormRedux) {
   const [ownerError, setOwnerError] = useState(false);
+  // const [meetingTabs, setMeetingTabs] = useState<MeetingNote[]>(() =>
+  //   parseMeetingNotes(form.activityEarly),
+  // );
+  const [activeMeetingTab, setActiveMeetingTab] = useState(0);
 
   useEffect(() => {
     if (!open) {
       setOwnerError(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    // const nextMeetingTabs = parseMeetingNotes(form.activityEarly);
+    // setMeetingTabs(nextMeetingTabs);
+    // setActiveMeetingTab(0);
+    const nextMeetingTabs = normalizeMeetings(
+      form.meetings,
+      form.activityEarly,
+    );
+    setForm((prev) => ({
+      ...prev,
+      meetings: nextMeetingTabs,
+      activityEarly: buildActivityEarlySummary(nextMeetingTabs),
+    }));
+    setActiveMeetingTab(0);
+  }, [open, form.cardCode, setForm]);
 
   const handleSave = () => {
     if (!form.owner?.trim()) {
@@ -60,6 +131,55 @@ export default function CardDetailDialog({
     setOwnerError(false);
     onSave();
   };
+
+  const syncMeetingsToForm = (nextMeetingTabs: MeetingNote[]) => {
+    setForm({
+      ...form,
+      meetings: nextMeetingTabs,
+      activityEarly: buildActivityEarlySummary(nextMeetingTabs),
+    });
+  };
+
+  const handleMeetingChange = (
+    index: number,
+    field: keyof MeetingNote,
+    value: string,
+  ) => {
+    // const nextMeetingTabs = meetingTabs.map((meeting, meetingIndex) =>
+    //   meetingIndex === index ? { ...meeting, [field]: value } : meeting,
+    // );
+    // syncMeetingsToForm(nextMeetingTabs);
+    const nextMeetingTabs = form.meetings.map((meeting, meetingIndex) =>
+      meetingIndex === index ? { ...meeting, [field]: value } : meeting,
+    );
+    syncMeetingsToForm(nextMeetingTabs);
+  };
+
+  const handleAddMeetingTab = () => {
+    const nextMeetingTabs = [
+      ...form.meetings,
+      createMeetingNote({
+        title: `Meeting ${form.meetings.length + 1}`,
+      }),
+    ];
+    syncMeetingsToForm(nextMeetingTabs);
+    setActiveMeetingTab(nextMeetingTabs.length - 1);
+  };
+
+  const handleRemoveMeetingTab = (index: number) => {
+    const nextMeetingTabs = form.meetings.filter(
+      (_, meetingIndex) => meetingIndex !== index,
+    );
+    const normalizedMeetingTabs =
+      nextMeetingTabs.length > 0 ? nextMeetingTabs : [createMeetingNote()];
+    syncMeetingsToForm(normalizedMeetingTabs);
+    setActiveMeetingTab((currentTab) =>
+      Math.min(currentTab, normalizedMeetingTabs.length - 1),
+    );
+  };
+
+  const meetingTabs = normalizeMeetings(form.meetings, form.activityEarly);
+  const currentMeeting = meetingTabs[activeMeetingTab] ?? createMeetingNote();
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
@@ -208,14 +328,127 @@ export default function CardDetailDialog({
             <Divider sx={{ my: 3 }} />
             {/* Bottom Left */}
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Activities & Notes
+              Additional Information
             </Typography>
             <Accordion sx={{ mb: 2 }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2">Meetings & MoMs</Typography>
+                <Typography variant="body2">Activities</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <TextField
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Tabs
+                    value={activeMeetingTab}
+                    onChange={(_, nextValue) => setActiveMeetingTab(nextValue)}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    sx={{ minHeight: 40 }}
+                  >
+                    {meetingTabs.map((meeting, index) => (
+                      <Tab
+                        key={`${meeting.title}-${index}`}
+                        label={meeting.title.trim() || `Meeting ${index + 1}`}
+                        sx={{ minHeight: 40 }}
+                      />
+                    ))}
+                  </Tabs>
+                  <Button
+                    size="small"
+                    startIcon={<Addicon />}
+                    onClick={handleAddMeetingTab}
+                  >
+                    Add New
+                  </Button>
+                </Box>
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid size={8}>
+                    <TextField
+                      label="Activity Title"
+                      fullWidth
+                      variant="standard"
+                      value={currentMeeting.title}
+                      onChange={(e) =>
+                        handleMeetingChange(
+                          activeMeetingTab,
+                          "title",
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </Grid>
+                  <Grid
+                    size={4}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Button
+                      color="error"
+                      onClick={() => handleRemoveMeetingTab(activeMeetingTab)}
+                    >
+                      Remove
+                    </Button>
+                  </Grid>
+                  <Grid size={6}>
+                    <TextField
+                      label="Location"
+                      fullWidth
+                      variant="standard"
+                      value={currentMeeting.location}
+                      onChange={(e) =>
+                        handleMeetingChange(
+                          activeMeetingTab,
+                          "location",
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </Grid>
+                  <Grid size={6}>
+                    <TextField
+                      label="Schedule"
+                      type="date"
+                      fullWidth
+                      variant="standard"
+                      value={currentMeeting.startedAt}
+                      slotProps={{
+                        inputLabel: {
+                          shrink: true,
+                        },
+                      }}
+                      onChange={(e) =>
+                        handleMeetingChange(
+                          activeMeetingTab,
+                          "startedAt",
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <TextField
+                      label="Notes"
+                      fullWidth
+                      multiline
+                      rows={6}
+                      value={currentMeeting.notes}
+                      onChange={(e) =>
+                        handleMeetingChange(
+                          activeMeetingTab,
+                          "notes",
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+                {/* <TextField
                   fullWidth
                   multiline
                   rows={6}
@@ -223,7 +456,7 @@ export default function CardDetailDialog({
                   onChange={(e) =>
                     setForm({ ...form, activityEarly: e.target.value })
                   }
-                ></TextField>
+                ></TextField> */}
               </AccordionDetails>
             </Accordion>
             <Accordion sx={{ mb: 2 }}>
@@ -366,7 +599,7 @@ export default function CardDetailDialog({
                         }}
                       />
                     </Grid>
-                    <Grid size={6}>
+                    <Grid size={5}>
                       <TextField
                         sx={{ mt: 1.5 }}
                         label="Unit price"
@@ -396,7 +629,34 @@ export default function CardDetailDialog({
                         }}
                       />
                     </Grid>
-                    <Grid size={6}>
+                    <Grid size={2}>
+                      <TextField
+                        sx={{ mt: 1.5 }}
+                        label="% Margin"
+                        size="small"
+                        type="number"
+                        fullWidth
+                        value={row.margin ?? ""}
+                        slotProps={{
+                          htmlInput: {
+                            step: "0.01",
+                            placeholder: "%",
+                          },
+                        }}
+                        onChange={(e) => {
+                          const margin = parseNumericInput(e.target.value);
+                          setForm((prev: CardFormState) => ({
+                            ...prev,
+                            items: prev.items.map((currentRow, i) =>
+                              i === index
+                                ? { ...currentRow, margin }
+                                : currentRow,
+                            ),
+                          }));
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={5}>
                       <TextField
                         sx={{ mt: 1.5 }}
                         label="Subtotal"
@@ -422,6 +682,7 @@ export default function CardDetailDialog({
                         quantity: 0,
                         uom: "",
                         pricePerUom: 0,
+                        margin: 0,
                         subtotal: 0,
                       },
                     ],

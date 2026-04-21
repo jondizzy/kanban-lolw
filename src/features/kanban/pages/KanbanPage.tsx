@@ -25,6 +25,7 @@ import type {
 } from "../../../store/kanbanTypes";
 import { roleVisibleColumns } from "../utils/roleColumn";
 import { normalizeCustomerGroup } from "../utils/customerGroup";
+import { normalizeMeetings } from "../utils/meetingNotes";
 
 // Fallback role resolution used before `auth/me` finishes loading.
 const resolveStoredUserRole = () => {
@@ -124,6 +125,7 @@ export default function KanbanPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [form, setForm] = useState<CardFormState>({
     title: "",
+    meetings: normalizeMeetings(),
     items: [],
     total: 0,
     value: 0,
@@ -266,6 +268,7 @@ export default function KanbanPage() {
             activityEarly: task.activityEarly || "",
             activityMid: task.activityMid || "",
             activityLate: task.activityLate || "",
+            meetings: normalizeMeetings(task.meetings, task.activityEarly),
             items: task.items && task.items.length > 0 ? task.items : [],
             total: task.total || 0,
           });
@@ -317,6 +320,7 @@ export default function KanbanPage() {
                   activityEarly: form.activityEarly || "",
                   activityMid: form.activityMid || "",
                   activityLate: form.activityLate || "",
+                  meetings: form.meetings,
                 },
               }),
             ).unwrap();
