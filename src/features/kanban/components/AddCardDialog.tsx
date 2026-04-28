@@ -15,7 +15,6 @@ import api from "../../../api/axiosApi";
 
 export default function AddCardDialog({
   open,
-  columnId: _columnId,
   defaultDepartment,
   allowDepartmentChange = true,
   onClose,

@@ -3,6 +3,15 @@ import { Droppable } from "@hello-pangea/dnd";
 import CardPreview from "./CardPreview";
 import { columnColors } from "../utils/columnColors";
 import formatRupiah from "../utils/currencyFormatter";
+import type { Column, Task } from "../../../store/kanbanTypes";
+
+type KanbanColumnProps = {
+  column: Column;
+  tasks: Record<string, Task>;
+  onAddCard: (columnId: string) => void;
+  onCardClick: (task: Task) => void;
+  onDelete: (taskId: string) => void;
+};
 
 export default function KanbanColumn({
   column,
@@ -10,7 +19,7 @@ export default function KanbanColumn({
   onAddCard,
   onCardClick,
   onDelete,
-}: any) {
+}: KanbanColumnProps) {
   const revenue = column.taskIds.reduce((sum: number, taskId: string) => {
     const task = tasks[taskId];
     return sum + (Number(task?.value) || 0);

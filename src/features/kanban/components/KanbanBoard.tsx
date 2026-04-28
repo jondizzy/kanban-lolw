@@ -1,12 +1,16 @@
 import { Box } from "@mui/material";
 import { DragDropContext } from "@hello-pangea/dnd";
+import type { DropResult } from "@hello-pangea/dnd";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { moveTask, updateCardStatus } from "../../../store/kanbanSlice";
 import KanbanColumn from "./KanbanColumn";
 import type { KanbanProps } from "../../../store/kanbanTypes";
+import { matchesCreatedDateRange } from "../utils/createdDateFilter";
 
 export default function KanbanBoard({
   activeDivision,
+  createdDateStart,
+  createdDateEnd,
   visibleColumnIds,
   onAddCard,
   onCardClick,
@@ -21,7 +25,7 @@ export default function KanbanBoard({
     visibleColumnIds.includes(columnId),
   );
 
-  const onDragEnd = async (result: any) => {
+  const onDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
     if (
@@ -94,6 +98,12 @@ export default function KanbanBoard({
               return false;
             }
 
+            if (
+              !matchesCreatedDateRange(task, createdDateStart, createdDateEnd)
+            ) {
+              return false;
+            }
+
             if (!search) return true;
             // Search focuses on the fields users most often recognize quickly.
             return (
@@ -103,8 +113,8 @@ export default function KanbanBoard({
               task.customerPic?.toLowerCase().includes(normalizedSearch) ||
               task.phoneNumber?.toLowerCase().includes(normalizedSearch) ||
               task.customerGroup?.toLowerCase().includes(normalizedSearch) ||
+              task.description?.toLowerCase().includes(normalizedSearch) ||
               task.owner?.toLowerCase().includes(normalizedSearch) ||
-              //ADDED
               task.items?.some((item) =>
                 item.item.toLowerCase().includes(normalizedSearch),
               )

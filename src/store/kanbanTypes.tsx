@@ -1,11 +1,13 @@
 // Shared domain types used across Redux, dialogs, and API mapping.
 
 export type LineItem = {
+  id?: number | string;
   item: string;
   quantity: number;
   uom: string;
   pricePerUom: number;
   margin?: number;
+  requiredCapital?: number;
   subtotal: number; //PPU * QTY
 };
 
@@ -36,6 +38,8 @@ export type Task = {
   customerGroup?: string;
   owner?: string;
   value?: number;
+  capital?: number;
+  custPo?: string;
   items: LineItem[];
   total?: number;
   activityEarly?: string;
@@ -55,6 +59,7 @@ export type CardFormState = {
   customerGroup?: string;
   owner?: string;
   value?: number; // deal value shown on the card
+  custPo?: string;
   activityEarly?: string;
   activityMid?: string;
   activityLate?: string;
@@ -88,10 +93,12 @@ export type Role = "AG" | "CH" | "FD" | "BM" | "MNG";
 
 export type KanbanProps = {
   search: string;
+  createdDateStart?: string;
+  createdDateEnd?: string;
   activeDivision: Role;
   visibleColumnIds: string[];
   onAddCard: (columnId: string) => void;
-  onCardClick: (task: any) => void;
+  onCardClick: (task: Task) => void;
   onDelete: (taskId: string) => void;
 };
 
@@ -119,12 +126,22 @@ export type ApiCard = {
   DepartmentCode?: Role | string | null;
   Description?: string;
   Value?: number | null;
+  // Capital?: number | null;
+  // capital?: number | null;
+  RequiredCapital?: number | null;
+  // requiredCapital?: number | null;
   Owner?: string | null;
   Status?: string | null;
   CustomerName?: string | null;
   CustomerPic?: string | null;
   PhoneNumber?: string | null;
   CustomerGroup?: string | null;
+  // CustPO?: string | null;
+  CustPo?: string | null;
+  // CustomerPO?: string | null;
+  // customerPO?: string | null;
+  // customerPo?: string | null;
+  // custPO?: string | null;
   ActivityEarly?: string | null;
   ActivityMid?: string | null;
   ActivityLate?: string | null;
@@ -152,11 +169,14 @@ export type ApiCardFile = {
 };
 
 export type ApiCardItem = {
+  id?: number | string;
   item?: string;
   quantity?: number;
   uom?: string;
   pricePerUom?: number;
   margin?: number;
+  requiredCapital?: number;
+  RequiredCapital?: number;
   subtotal?: number;
 };
 

@@ -98,6 +98,22 @@ const initialState: KanbanState = {
   columnOrder,
 };
 
+const readCustPo = (card?: ApiCard | null) => card?.CustPo ?? "";
+
+const mapApiCardItem = (it: ApiCardItem) => ({
+  id: it.id !== undefined && it.id !== null ? String(it.id) : undefined,
+  item: it.item ?? "",
+  quantity: Number(it.quantity ?? 0),
+  uom: it.uom ?? "",
+  pricePerUom: Number(it.pricePerUom ?? 0),
+  margin: Number(it.margin ?? 0),
+  requiredCapital: Number(it.requiredCapital ?? it.RequiredCapital ?? 0),
+  subtotal: Number(it.subtotal ?? 0),
+});
+
+const sumRequiredCapital = (items: ReturnType<typeof mapApiCardItem>[]) =>
+  items.reduce((sum, item) => sum + Number(item.requiredCapital ?? 0), 0);
+
 export const createTask = createAsyncThunk(
   "kanban/createTask",
   async ({
@@ -159,6 +175,7 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
     }
     const status =
       card.Status && columns[card.Status] ? card.Status : "new_leads";
+    const items = (card.Items ?? []).map(mapApiCardItem);
 
     tasks[id] = {
       id,
@@ -171,23 +188,18 @@ export const fetchCards = createAsyncThunk("kanban/fetchCards", async () => {
         resolveDivisionFromCardCode(card.CardCode ?? ""),
       description: card.Description ?? "",
       value: Number(card.Value ?? 0),
+      capital: sumRequiredCapital(items),
       owner: card.Owner ?? "",
       customerName: card.CustomerName ?? "",
       customerPic: card.CustomerPic ?? "",
       phoneNumber: card.PhoneNumber ?? "",
       customerGroup: normalizeCustomerGroup(card.CustomerGroup),
+      custPo: readCustPo(card),
       activityEarly: card.ActivityEarly ?? "",
       activityMid: card.ActivityMid ?? "",
       activityLate: card.ActivityLate ?? "",
       meetings: normalizeMeetings(card.Meetings, card.ActivityEarly),
-      items: (card.Items ?? []).map((it) => ({
-        item: it.item ?? "",
-        quantity: Number(it.quantity ?? 0),
-        uom: it.uom ?? "",
-        pricePerUom: Number(it.pricePerUom ?? 0),
-        margin: Number(it.margin ?? 0),
-        subtotal: Number(it.subtotal ?? 0),
-      })),
+      items,
       files: (card.Files ?? []).map((file: ApiCardFile) => ({
         id: String(file.id ?? ""),
         name: file.fileName ?? file.name ?? "",
@@ -214,7 +226,9 @@ export const uploadFile = createAsyncThunk(
       },
     });
 
-    const uploadedFile = Array.isArray(res.data?.files) ? res.data.files[0] : null;
+    const uploadedFile = Array.isArray(res.data?.files)
+      ? res.data.files[0]
+      : null;
 
     return {
       taskId,
@@ -284,11 +298,13 @@ const kanbanSlice = createSlice({
           department,
         description: task.Description,
         value: task.Value,
+        capital: 0,
         owner: task.Owner,
         customerName: task.CustomerName ?? "",
         customerPic: task.CustomerPic ?? "",
         phoneNumber: task.PhoneNumber ?? "",
         customerGroup: normalizeCustomerGroup(task.CustomerGroup),
+        custPo: readCustPo(task),
         activityEarly: task.ActivityEarly ?? "",
         activityMid: task.ActivityMid ?? "",
         activityLate: task.ActivityLate ?? "",
@@ -302,7 +318,9 @@ const kanbanSlice = createSlice({
     builder.addCase(saveCardData.fulfilled, (state, action) => {
       const { cardId, task } = action.payload;
       const saved = task?.card;
-      const savedItems = Array.isArray(task?.items) ? task.items : undefined;
+      const savedItems = Array.isArray(task?.items)
+        ? task.items.map(mapApiCardItem)
+        : undefined;
       if (state.tasks[cardId]) {
         state.tasks[cardId] = {
           ...state.tasks[cardId],
@@ -318,6 +336,7 @@ const kanbanSlice = createSlice({
             state.tasks[cardId].departmentCode,
           description: saved?.Description ?? state.tasks[cardId].description,
           value: Number(saved?.Value ?? state.tasks[cardId].value ?? 0),
+          capital: sumRequiredCapital(savedItems ?? state.tasks[cardId].items),
           owner: saved?.Owner ?? state.tasks[cardId].owner,
           customerName:
             saved?.CustomerName ?? state.tasks[cardId].customerName ?? "",
@@ -329,6 +348,7 @@ const kanbanSlice = createSlice({
             normalizeCustomerGroup(
               saved?.CustomerGroup ?? state.tasks[cardId].customerGroup,
             ) ?? "",
+          custPo: readCustPo(saved) || state.tasks[cardId].custPo || "",
           activityEarly:
             saved?.ActivityEarly ?? state.tasks[cardId].activityEarly ?? "",
           activityMid:
@@ -339,15 +359,7 @@ const kanbanSlice = createSlice({
             saved?.Meetings,
             saved?.ActivityEarly ?? state.tasks[cardId].activityEarly,
           ),
-          items:
-            savedItems?.map((it: ApiCardItem) => ({
-              item: it.item ?? "",
-              quantity: Number(it.quantity ?? 0),
-              uom: it.uom ?? "",
-              pricePerUom: Number(it.pricePerUom ?? 0),
-              margin: Number(it.margin ?? 0),
-              subtotal: Number(it.subtotal ?? 0),
-            })) ?? state.tasks[cardId].items,
+          items: savedItems ?? state.tasks[cardId].items,
         };
       }
     });

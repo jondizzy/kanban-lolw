@@ -11,18 +11,22 @@ import AddCardDialog from "../components/AddCardDialog";
 import CardDetailDialog from "../components/CardDetailDialog";
 import {
   Box,
+  Button,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   TextField,
 } from "@mui/material";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import TableRowsIcon from "@mui/icons-material/TableRows";
 import api from "../../../api/axiosApi";
 import type {
   AuthSession,
   CardFormState,
   Role,
 } from "../../../store/kanbanTypes";
+import TableView from "../components/TableView";
 import { roleVisibleColumns } from "../utils/roleColumn";
 import { normalizeCustomerGroup } from "../utils/customerGroup";
 import { normalizeMeetings } from "../utils/meetingNotes";
@@ -111,6 +115,9 @@ export default function KanbanPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [activeColumnId, setActiveColumnId] = useState("");
   const [search, setSearch] = useState("");
+  const [createdDateStart, setCreatedDateStart] = useState("");
+  const [createdDateEnd, setCreatedDateEnd] = useState("");
+  const [viewMode, setViewMode] = useState<"kanban" | "table">("kanban");
   const handleDelete = async (taskId: string) => {
     try {
       await dispatch(deleteTask(taskId)).unwrap();
@@ -133,7 +140,9 @@ export default function KanbanPage() {
   const isKanbanAdmin = isKanbanAdminRole(userRole);
   const defaultDivisionRole = resolveDivisionFromUserRole(userRole);
   const [role, setRole] = useState<Role>(defaultDivisionRole);
-  const visibleColumnIds = roleVisibleColumns[role];
+  const activeDivision = isKanbanAdmin ? role : defaultDivisionRole;
+  const visibleColumnIds = roleVisibleColumns[activeDivision];
+  const isTableView = viewMode === "table";
 
   useEffect(() => {
     let isMounted = true;
@@ -165,25 +174,6 @@ export default function KanbanPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!isKanbanAdmin && role !== defaultDivisionRole) {
-      setRole(defaultDivisionRole);
-    }
-  }, [defaultDivisionRole, isKanbanAdmin, role]);
-
-  // Keep the dialog total derived from the line items shown on screen.
-  useEffect(() => {
-    const nextTotal = form.items.reduce((sum, row) => sum + row.subtotal, 0);
-
-    if (form.total !== nextTotal) {
-      setForm((prev) => ({
-        ...prev,
-        total: nextTotal,
-        value: prev.value || nextTotal,
-      }));
-    }
-  }, [form.items]);
-
   // Initial board load.
   useEffect(() => {
     dispatch(fetchCards());
@@ -210,6 +200,40 @@ export default function KanbanPage() {
           onChange={(e) => setSearch(e.target.value)}
           sx={{ width: 260 }}
         />
+        <TextField
+          size="small"
+          label="From"
+          type="date"
+          value={createdDateStart}
+          onChange={(e) => setCreatedDateStart(e.target.value)}
+          slotProps={{
+            inputLabel: { shrink: true },
+          }}
+          sx={{ width: 160 }}
+        />
+        <TextField
+          size="small"
+          label="To"
+          type="date"
+          value={createdDateEnd}
+          onChange={(e) => setCreatedDateEnd(e.target.value)}
+          slotProps={{
+            inputLabel: { shrink: true },
+          }}
+          sx={{ width: 160 }}
+        />
+        <Button
+          variant="outlined"
+          startIcon={isTableView ? <DashboardIcon /> : <TableRowsIcon />}
+          onClick={() =>
+            setViewMode((current) =>
+              current === "kanban" ? "table" : "kanban",
+            )
+          }
+          sx={{ whiteSpace: "nowrap" }}
+        >
+          {isTableView ? "Kanban View" : "Table View"}
+        </Button>
 
         {/* keep your role selector on the right */}
         <Box
@@ -229,57 +253,99 @@ export default function KanbanPage() {
             <InputLabel id="role-select-label">Division</InputLabel>
             <Select
               labelId="role-select-label"
-              value={role}
+              value={activeDivision}
               label="Segment"
               disabled={!isKanbanAdmin}
               onChange={(e) => setRole(e.target.value as Role)}
             >
-              <MenuItem value="AG">AG</MenuItem>
-              <MenuItem value="CH">CH</MenuItem>
-              <MenuItem value="FD">FD</MenuItem>
-              <MenuItem value="BM">BM</MenuItem>
-              <MenuItem value="MNG">MNG</MenuItem>
+              <MenuItem value="AG">AG (Agrochemical)</MenuItem>
+              <MenuItem value="CH">CH (Paper Chemical)</MenuItem>
+              <MenuItem value="FD">FD (Food & Other Chemical)</MenuItem>
+              <MenuItem value="BM">BM (Building Material)</MenuItem>
+              <MenuItem value="MNG">ADMIN (All)</MenuItem>
             </Select>
           </FormControl>
         </Box>
       </Box>
 
-      <KanbanBoard
-        activeDivision={role}
-        search={search}
-        visibleColumnIds={visibleColumnIds}
-        onAddCard={(colId) => {
-          setActiveColumnId(colId);
-          setAddOpen(true);
-        }}
-        onCardClick={(task) => {
-          setSelectedTaskId(task.id);
-          // Seed the detail dialog from the normalized Redux task shape.
-          setForm({
-            title: task.title || "",
-            description: task.description || "",
-            value: Number(task.value || 0),
-            owner: task.owner || "",
-            cardCode: task.cardCode || "",
-            customerName: task.customerName || "",
-            customerPic: task.customerPic || "",
-            phoneNumber: task.phoneNumber || "",
-            customerGroup: normalizeCustomerGroup(task.customerGroup),
-            activityEarly: task.activityEarly || "",
-            activityMid: task.activityMid || "",
-            activityLate: task.activityLate || "",
-            meetings: normalizeMeetings(task.meetings, task.activityEarly),
-            items: task.items && task.items.length > 0 ? task.items : [],
-            total: task.total || 0,
-          });
-        }}
-        onDelete={handleDelete}
-      />
+      {isTableView ? (
+        <TableView
+          activeDivision={activeDivision}
+          createdDateStart={createdDateStart}
+          createdDateEnd={createdDateEnd}
+          search={search}
+          visibleColumnIds={visibleColumnIds}
+          onAddCard={(colId) => {
+            setActiveColumnId(colId);
+            setAddOpen(true);
+          }}
+          onCardClick={(task) => {
+            setSelectedTaskId(task.id);
+            // Seed the detail dialog from the normalized Redux task shape.
+            setForm({
+              title: task.title || "",
+              description: task.description || "",
+              value: Number(task.value || 0),
+              owner: task.owner || "",
+              cardCode: task.cardCode || "",
+              customerName: task.customerName || "",
+              customerPic: task.customerPic || "",
+              phoneNumber: task.phoneNumber || "",
+              customerGroup: normalizeCustomerGroup(task.customerGroup),
+              custPo: task.custPo || "",
+              activityEarly: task.activityEarly || "",
+              activityMid: task.activityMid || "",
+              activityLate: task.activityLate || "",
+              meetings: normalizeMeetings(task.meetings, task.activityEarly),
+              items: task.items && task.items.length > 0 ? task.items : [],
+              total: task.total || 0,
+            });
+          }}
+          onDelete={handleDelete}
+        />
+      ) : (
+        <KanbanBoard
+          activeDivision={activeDivision}
+          createdDateStart={createdDateStart}
+          createdDateEnd={createdDateEnd}
+          search={search}
+          visibleColumnIds={visibleColumnIds}
+          onAddCard={(colId) => {
+            setActiveColumnId(colId);
+            setAddOpen(true);
+          }}
+          onCardClick={(task) => {
+            setSelectedTaskId(task.id);
+            // Seed the detail dialog from the normalized Redux task shape.
+            setForm({
+              title: task.title || "",
+              description: task.description || "",
+              value: Number(task.value || 0),
+              owner: task.owner || "",
+              cardCode: task.cardCode || "",
+              customerName: task.customerName || "",
+              customerPic: task.customerPic || "",
+              phoneNumber: task.phoneNumber || "",
+              customerGroup: normalizeCustomerGroup(task.customerGroup),
+              custPo: task.custPo || "",
+              activityEarly: task.activityEarly || "",
+              activityMid: task.activityMid || "",
+              activityLate: task.activityLate || "",
+              meetings: normalizeMeetings(task.meetings, task.activityEarly),
+              items: task.items && task.items.length > 0 ? task.items : [],
+              total: task.total || 0,
+            });
+          }}
+          onDelete={handleDelete}
+        />
+      )}
 
       <AddCardDialog
         open={addOpen}
         columnId={activeColumnId}
-        defaultDepartment={role === "MNG" ? defaultDivisionRole : role}
+        defaultDepartment={
+          activeDivision === "MNG" ? defaultDivisionRole : activeDivision
+        }
         allowDepartmentChange={isKanbanAdmin}
         onClose={() => setAddOpen(false)}
         onCreate={(payload) => {
@@ -295,12 +361,17 @@ export default function KanbanPage() {
         }}
       />
       <CardDetailDialog
+        key={selectedTaskId ?? "no-selection"}
         open={selectedTaskId !== null}
         form={form}
         setForm={setForm}
         onClose={() => setSelectedTaskId(null)}
         onSave={async () => {
           if (!selectedTaskId) return;
+          const total = form.items.reduce(
+            (sum, item) => sum + item.subtotal,
+            0,
+          );
           try {
             await dispatch(
               saveCardData({
@@ -308,15 +379,16 @@ export default function KanbanPage() {
                 taskData: {
                   title: form.title,
                   description: form.description,
-                  value: Number(form.total) || 0,
+                  value: Number(total) || 0,
                   owner: form.owner,
                   cardCode: form.cardCode || "",
                   customerName: form.customerName || "",
                   customerPic: form.customerPic || "",
                   phoneNumber: form.phoneNumber || "",
                   customerGroup: normalizeCustomerGroup(form.customerGroup),
+                  custPo: form.custPo || "",
                   items: form.items,
-                  total: form.total || 0,
+                  total,
                   activityEarly: form.activityEarly || "",
                   activityMid: form.activityMid || "",
                   activityLate: form.activityLate || "",

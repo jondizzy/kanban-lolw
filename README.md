@@ -7,8 +7,11 @@ It supports:
 - Fetching card data from a backend API
 - Creating new lead cards
 - Editing card details and line items
+- Editing meeting/activity notes and customer contact details
+- Uploading and deleting per-card attachments
 - Dragging cards between pipeline stages
 - Filtering the board by division and search text
+- Filtering cards by created-date range
 - Showing different columns depending on the logged-in user's role
 
 ## Tech Stack
@@ -39,7 +42,10 @@ src/
     utils/
       cardDivision.tsx          Division fallback logic from card code
       columnColors.tsx          Column color map
+      createdDateFilter.tsx     Created-date range filtering helper
+      customerGroup.tsx         Customer group normalization helper
       currencyFormatter.tsx     Rupiah formatting helper
+      meetingNotes.tsx          Meeting note parsing/serialization helpers
       roleColumn.tsx            Visible columns for each role
   store/
     hooks.tsx                   Typed Redux hooks
@@ -95,12 +101,32 @@ This dialog edits:
 - title and description
 - customer data
 - owner
-- activity notes
+- activity notes and meeting tabs
 - item rows
+- required capital and PO information
+- attachments from the card preview
 
-The line-item total is recalculated in `KanbanPage`, and saving dispatches `saveCardData`, which sends the payload to `PUT /cards/:id`.
+The line-item total is derived from the current item list, and saving dispatches `saveCardData`, which sends the payload to `PUT /cards/:id`.
 
-### 5. Drag and drop
+### 5. Filtering
+
+The board supports:
+
+- free-text search across card metadata and item names
+- created-date start/end filtering
+- role-based division filtering
+
+### 6. Attachments
+
+`CardPreview` supports:
+
+- uploading files to a card
+- listing current attachments
+- deleting uploaded attachments
+
+These actions use `uploadFile` and `deleteFile` in the Redux slice.
+
+### 7. Drag and drop
 
 `KanbanBoard` uses `@hello-pangea/dnd`.
 
@@ -136,6 +162,8 @@ The frontend currently expects these routes to exist on the backend:
 - `PUT /cards/:id`
 - `DELETE /cards/:id`
 - `GET /cards/next-number`
+- `POST /cards/:id/files`
+- `DELETE /cards/:id/files/:fileId`
 
 ## Local Development
 
@@ -176,6 +204,7 @@ If you need to point the frontend to another backend during development, update 
 - API responses are defensive because backend fields may arrive in multiple naming formats such as `id`, `ID`, or `Id`.
 - Department codes are normalized before the board filters cards by division.
 - Card totals are derived from line items, so changing quantity or price updates subtotal and total-related UI.
+- Older cards may still store early activity as plain text, so `meetingNotes.tsx` normalizes both structured meetings and legacy text.
 
 ## Suggested Next Documentation Improvements
 

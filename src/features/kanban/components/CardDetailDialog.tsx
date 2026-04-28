@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -31,48 +31,12 @@ import type {
 } from "../../../store/kanbanTypes";
 import formatRupiah from "../utils/currencyFormatter";
 import { normalizeCustomerGroup } from "../utils/customerGroup";
-// import { current } from "@reduxjs/toolkit";
 import {
   buildActivityEarlySummary,
   createMeetingNote,
   normalizeMeetings,
 } from "../utils/meetingNotes";
 
-// const DEFAULT_MEETING_TITLE = "Meeting 1";
-// const createMeetingNote = (overrides?: Partial<MeetingNote>): MeetingNote => ({
-//   title: DEFAULT_MEETING_TITLE,
-//   location: "",
-//   startedAt: "",
-//   notes: "",
-//   ...overrides,
-// });
-
-// const parseMeetingNotes = (value?: string): MeetingNote[] => {
-//   if (!value?.trim()) {
-//     return [createMeetingNote()];
-//   }
-
-//   try {
-//     const parsed = JSON.parse(value) as {
-//       meetings?: Array<Partial<MeetingNote>>;
-//     };
-
-//     if (Array.isArray(parsed.meetings) && parsed.meetings.length > 0) {
-//       return parsed.meetings.map((meeting, index) =>
-//         createMeetingNote({
-//           title: meeting.title?.trim() || `Meeting ${index + 1}`,
-//           location: meeting.location ?? "",
-//           startedAt: meeting.startedAt ?? "",
-//           notes: meeting.notes ?? "",
-//         }),
-//       );
-//     }
-//   } catch {}
-//   return [createMeetingNote({ notes: value })];
-// };
-
-// const serializeMeetingNotes = (meetings: MeetingNote[]) =>
-//   JSON.stringify({ meetings });
 // Avoid NaN when a numeric field is temporarily cleared during editing.
 const parseNumericInput = (value: string) => {
   if (value.trim() === "") {
@@ -80,6 +44,32 @@ const parseNumericInput = (value: string) => {
   }
 
   const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const calculateItemsTotal = (items: CardFormState["items"]) =>
+  items.reduce((sum, item) => sum + item.subtotal, 0);
+
+const toEditableCurrencyString = (value?: number) => {
+  if (value === undefined || value === null || Number.isNaN(value)) {
+    return "";
+  }
+
+  return String(value).replace(".", ",");
+};
+
+const parseCurrencyInput = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return 0;
+  }
+
+  const normalized = trimmed
+    .replace(/\s+/g, "")
+    .replace(/^Rp\s?/i, "")
+    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
+    .replace(",", ".");
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
@@ -91,36 +81,13 @@ export default function CardDetailDialog({
   onSave,
 }: CardFormRedux) {
   const [ownerError, setOwnerError] = useState(false);
-  // const [meetingTabs, setMeetingTabs] = useState<MeetingNote[]>(() =>
-  //   parseMeetingNotes(form.activityEarly),
-  // );
+  const [priceInputs, setPriceInputs] = useState<Record<number, string>>({});
+  const [requiredCapitalInputs, setRequiredCapitalInputs] = useState<
+    Record<number, string>
+  >({});
   const [activeMeetingTab, setActiveMeetingTab] = useState(0);
 
-  useEffect(() => {
-    if (!open) {
-      setOwnerError(false);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    // const nextMeetingTabs = parseMeetingNotes(form.activityEarly);
-    // setMeetingTabs(nextMeetingTabs);
-    // setActiveMeetingTab(0);
-    const nextMeetingTabs = normalizeMeetings(
-      form.meetings,
-      form.activityEarly,
-    );
-    setForm((prev) => ({
-      ...prev,
-      meetings: nextMeetingTabs,
-      activityEarly: buildActivityEarlySummary(nextMeetingTabs),
-    }));
-    setActiveMeetingTab(0);
-  }, [open, form.cardCode, setForm]);
-
+  // Fire a warning if sales resp field is empty
   const handleSave = () => {
     if (!form.owner?.trim()) {
       setOwnerError(true);
@@ -132,12 +99,36 @@ export default function CardDetailDialog({
     onSave();
   };
 
+  const handleClose = () => {
+    setOwnerError(false);
+    setPriceInputs({});
+    setRequiredCapitalInputs({});
+    setActiveMeetingTab(0);
+    onClose();
+  };
+
+  const updateItems = (
+    updater: (items: CardFormState["items"]) => CardFormState["items"],
+  ) => {
+    setForm((prev: CardFormState) => {
+      const items = updater(prev.items);
+      const total = calculateItemsTotal(items);
+
+      return {
+        ...prev,
+        items,
+        total,
+        value: total,
+      };
+    });
+  };
+
   const syncMeetingsToForm = (nextMeetingTabs: MeetingNote[]) => {
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       meetings: nextMeetingTabs,
       activityEarly: buildActivityEarlySummary(nextMeetingTabs),
-    });
+    }));
   };
 
   const handleMeetingChange = (
@@ -145,10 +136,6 @@ export default function CardDetailDialog({
     field: keyof MeetingNote,
     value: string,
   ) => {
-    // const nextMeetingTabs = meetingTabs.map((meeting, meetingIndex) =>
-    //   meetingIndex === index ? { ...meeting, [field]: value } : meeting,
-    // );
-    // syncMeetingsToForm(nextMeetingTabs);
     const nextMeetingTabs = form.meetings.map((meeting, meetingIndex) =>
       meetingIndex === index ? { ...meeting, [field]: value } : meeting,
     );
@@ -182,7 +169,7 @@ export default function CardDetailDialog({
   const currentMeeting = meetingTabs[activeMeetingTab] ?? createMeetingNote();
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="lg">
       <DialogTitle
         sx={{
           display: "flex",
@@ -214,7 +201,7 @@ export default function CardDetailDialog({
         </Box>
 
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={handleClose}>Cancel</Button>
           <Button variant="contained" onClick={handleSave}>
             Save
           </Button>
@@ -287,6 +274,36 @@ export default function CardDetailDialog({
               </Grid>
               <Grid size={6}>
                 <TextField
+                  label="Customer's PO Number"
+                  fullWidth
+                  value={form.custPo || ""}
+                  onChange={(e) => setForm({ ...form, custPo: e.target.value })}
+                />
+              </Grid>
+
+              <Grid size={6}>
+                <TextField
+                  label="Sales Responsible"
+                  required
+                  fullWidth
+                  value={form.owner || ""}
+                  error={ownerError}
+                  helperText={
+                    ownerError ? "Sales Responsible is required." : undefined
+                  }
+                  onChange={(e) => {
+                    const nextOwner = e.target.value;
+                    setForm({ ...form, owner: nextOwner });
+
+                    if (ownerError && nextOwner.trim()) {
+                      setOwnerError(false);
+                    }
+                  }}
+                />
+              </Grid>
+              {/* <Grid size={6}></Grid> */}
+              <Grid size={12}>
+                <TextField
                   label="Deal Value (IDR)"
                   disabled
                   fullWidth
@@ -299,27 +316,6 @@ export default function CardDetailDialog({
                   onChange={(e) => {
                     const raw = e.target.value.replace(/[^\d]/g, "");
                     setForm({ ...form, value: Number(raw) });
-                  }}
-                />
-              </Grid>
-
-              <Grid size={6}>
-                <TextField
-                  label="Sales Responsible"
-                  required
-                  fullWidth
-                  value={form.owner || ""}
-                  error={ownerError}
-                  helperText={
-                    ownerError ? "Sales Responsible is required." : " "
-                  }
-                  onChange={(e) => {
-                    const nextOwner = e.target.value;
-                    setForm({ ...form, owner: nextOwner });
-
-                    if (ownerError && nextOwner.trim()) {
-                      setOwnerError(false);
-                    }
                   }}
                 />
               </Grid>
@@ -535,7 +531,9 @@ export default function CardDetailDialog({
                     </Grid>
                     <Grid size={6}>
                       <TextField
-                        label="Item"
+                        // label="Item"
+                        variant="standard"
+                        helperText="Item"
                         size="small"
                         fullWidth
                         value={row.item}
@@ -554,7 +552,9 @@ export default function CardDetailDialog({
                     </Grid>
                     <Grid size={3}>
                       <TextField
-                        label="Qty"
+                        // label="Qty"
+                        variant="standard"
+                        helperText="Qty"
                         size="small"
                         type="number"
                         fullWidth
@@ -566,9 +566,8 @@ export default function CardDetailDialog({
                         value={row.quantity}
                         onChange={(e) => {
                           const quantity = parseNumericInput(e.target.value);
-                          setForm((prev: CardFormState) => ({
-                            ...prev,
-                            items: prev.items.map((currentRow, i) =>
+                          updateItems((items) =>
+                            items.map((currentRow, i) =>
                               i === index
                                 ? {
                                     ...currentRow,
@@ -578,45 +577,71 @@ export default function CardDetailDialog({
                                   }
                                 : currentRow,
                             ),
-                          }));
+                          );
                         }}
                       />
                     </Grid>
                     <Grid size={2}>
                       <TextField
-                        label="UOM"
+                        // label="UOM"
+                        variant="standard"
+                        helperText="UOM"
                         size="small"
                         fullWidth
                         value={row.uom}
                         onChange={(e) => {
                           const uom = e.target.value;
-                          setForm((prev: CardFormState) => ({
-                            ...prev,
-                            items: prev.items.map((currentRow, i) =>
+                          updateItems((items) =>
+                            items.map((currentRow, i) =>
                               i === index ? { ...currentRow, uom } : currentRow,
                             ),
-                          }));
+                          );
                         }}
                       />
                     </Grid>
                     <Grid size={5}>
                       <TextField
                         sx={{ mt: 1.5 }}
-                        label="Unit price"
+                        // label="Unit price"
+                        variant="standard"
+                        helperText="Unit Price"
                         size="small"
-                        type="number"
                         fullWidth
                         slotProps={{
                           htmlInput: {
-                            step: "0.01",
+                            inputMode: "decimal",
                           },
                         }}
-                        value={row.pricePerUom}
-                        onChange={(e) => {
-                          const pricePerUom = parseNumericInput(e.target.value);
-                          setForm((prev: CardFormState) => ({
+                        value={
+                          Object.prototype.hasOwnProperty.call(
+                            priceInputs,
+                            index,
+                          )
+                            ? priceInputs[index]
+                            : formatRupiah(Number(row.pricePerUom || 0))
+                        }
+                        onFocus={() => {
+                          setPriceInputs((prev) => ({
                             ...prev,
-                            items: prev.items.map((currentRow, i) =>
+                            [index]: toEditableCurrencyString(row.pricePerUom),
+                          }));
+                        }}
+                        onBlur={() => {
+                          setPriceInputs((prev) => {
+                            const next = { ...prev };
+                            delete next[index];
+                            return next;
+                          });
+                        }}
+                        onChange={(e) => {
+                          const nextInput = e.target.value;
+                          const pricePerUom = parseCurrencyInput(nextInput);
+                          setPriceInputs((prev) => ({
+                            ...prev,
+                            [index]: nextInput,
+                          }));
+                          updateItems((items) =>
+                            items.map((currentRow, i) =>
                               i === index
                                 ? {
                                     ...currentRow,
@@ -625,14 +650,16 @@ export default function CardDetailDialog({
                                   }
                                 : currentRow,
                             ),
-                          }));
+                          );
                         }}
                       />
                     </Grid>
                     <Grid size={2}>
                       <TextField
                         sx={{ mt: 1.5 }}
-                        label="% Margin"
+                        // label="% Margin"
+                        variant="standard"
+                        helperText="% Margin"
                         size="small"
                         type="number"
                         fullWidth
@@ -645,18 +672,70 @@ export default function CardDetailDialog({
                         }}
                         onChange={(e) => {
                           const margin = parseNumericInput(e.target.value);
-                          setForm((prev: CardFormState) => ({
-                            ...prev,
-                            items: prev.items.map((currentRow, i) =>
+                          updateItems((items) =>
+                            items.map((currentRow, i) =>
                               i === index
                                 ? { ...currentRow, margin }
                                 : currentRow,
                             ),
-                          }));
+                          );
                         }}
                       />
                     </Grid>
                     <Grid size={5}>
+                      <TextField
+                        sx={{ mt: 1.5 }}
+                        // label="Required Capital"
+                        variant="standard"
+                        helperText="Required Capital"
+                        size="small"
+                        fullWidth
+                        value={
+                          Object.prototype.hasOwnProperty.call(
+                            requiredCapitalInputs,
+                            index,
+                          )
+                            ? requiredCapitalInputs[index]
+                            : formatRupiah(Number(row.requiredCapital || 0))
+                        }
+                        onFocus={() => {
+                          setRequiredCapitalInputs((prev) => ({
+                            ...prev,
+                            [index]: toEditableCurrencyString(
+                              row.requiredCapital,
+                            ),
+                          }));
+                        }}
+                        onBlur={() => {
+                          setRequiredCapitalInputs((prev) => {
+                            const next = { ...prev };
+                            delete next[index];
+                            return next;
+                          });
+                        }}
+                        slotProps={{
+                          htmlInput: {
+                            inputMode: "decimal",
+                          },
+                        }}
+                        onChange={(e) => {
+                          const nextInput = e.target.value;
+                          const requiredCapital = parseCurrencyInput(nextInput);
+                          setRequiredCapitalInputs((prev) => ({
+                            ...prev,
+                            [index]: nextInput,
+                          }));
+                          updateItems((items) =>
+                            items.map((currentRow, i) =>
+                              i === index
+                                ? { ...currentRow, requiredCapital }
+                                : currentRow,
+                            ),
+                          );
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={12}>
                       <TextField
                         sx={{ mt: 1.5 }}
                         label="Subtotal"
@@ -673,20 +752,18 @@ export default function CardDetailDialog({
                 sx={{ mt: 2 }}
                 size="small"
                 onClick={() =>
-                  setForm((prev: CardFormState) => ({
-                    ...prev,
-                    items: [
-                      ...(prev.items ?? []),
-                      {
-                        item: "",
-                        quantity: 0,
-                        uom: "",
-                        pricePerUom: 0,
-                        margin: 0,
-                        subtotal: 0,
-                      },
-                    ],
-                  }))
+                  updateItems((items) => [
+                    ...items,
+                    {
+                      item: "",
+                      quantity: 0,
+                      uom: "",
+                      pricePerUom: 0,
+                      margin: 0,
+                      requiredCapital: 0,
+                      subtotal: 0,
+                    },
+                  ])
                 }
               >
                 + Add more items
