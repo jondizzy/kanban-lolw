@@ -321,32 +321,31 @@ export default function TableView({
                         <Typography variant="body2">
                           {renderItemPreview(items)}
                         </Typography>
-                        {items.length > 1 && (
-                          <Tooltip
-                            title={
-                              isExpanded
-                                ? "Hide item details"
-                                : "Show all items"
-                            }
+                        {/* {items.length > 1 && ( */}
+                        <Tooltip
+                          title={
+                            isExpanded ? "Hide item details" : "Show all items"
+                          }
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              toggleItems(task.id);
+                            }}
                           >
-                            <IconButton
-                              size="small"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                toggleItems(task.id);
-                              }}
-                            >
-                              {isExpanded ? (
-                                <ExpandLessIcon />
-                              ) : (
-                                <ExpandMoreIcon />
-                              )}
-                            </IconButton>
-                          </Tooltip>
-                        )}
+                            {isExpanded ? (
+                              <ExpandLessIcon />
+                            ) : (
+                              <ExpandMoreIcon />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                        {/* )} */}
                       </Box>
                       <Collapse
-                        in={isExpanded || items.length === 1}
+                        // in={isExpanded || items.length === 1}
+                        in={isExpanded}
                         timeout="auto"
                       >
                         <Stack spacing={1} sx={{ mt: 1 }}>
